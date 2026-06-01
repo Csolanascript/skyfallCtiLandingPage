@@ -1,0 +1,16 @@
+{
+  "top_actors": [
+    { "name": "APT29",            "aliases": ["Cozy Bear", "The Dukes", "NOBELIUM"], "technique_count": 189, "malware_used": ["CozyCar", "SUNBURST", "MiniDuke", "CosmicDuke", "Cobalt Strike"] },
+    { "name": "APT28",            "aliases": ["Fancy Bear", "Sofacy", "STRONTIUM"],  "technique_count": 167, "malware_used": ["X-Agent", "Mimikatz", "Empire", "LoJax"] },
+    { "name": "Lazarus Group",    "aliases": ["HIDDEN COBRA", "Guardians of Peace"], "technique_count": 154, "malware_used": ["BLINDINGCAN", "HOPLIGHT", "Duuzer", "ECCENTRICBANDWAGON"] },
+    { "name": "APT41",            "aliases": ["Double Dragon", "Winnti", "BARIUM"],  "technique_count": 138, "malware_used": ["MESSAGETAP", "Cobalt Strike", "Mimikatz", "KeyPlug"] },
+    { "name": "Sandworm Team",    "aliases": ["IRIDIUM", "Voodoo Bear"],             "technique_count": 121, "malware_used": ["NotPetya", "BlackEnergy", "Industroyer", "Cyclops Blink"] }
+  ],
+  "top_malware": [
+    { "name": "Cobalt Strike",    "platforms": ["Windows", "Linux", "macOS"],                         "technique_count": 78 },
+    { "name": "Mimikatz",         "platforms": ["Windows"],                                           "technique_count": 62 },
+    { "name": "Empire",           "platforms": ["Windows", "Linux", "macOS"],                         "technique_count": 54 },
+    { "name": "Metasploit",       "platforms": ["Windows", "Linux", "macOS", "Android"],              "technique_count": 49 },
+    { "name": "Emotet",           "platforms": ["Windows"],                                           "technique_count": 43 }
+  ]
+}

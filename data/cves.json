@@ -1,0 +1,12 @@
+[
+  { "cve": "CVE-2026-20127", "cvss": 10, "title": "Cisco Catalyst SD-WAN Controller and Manager Authentication Bypass" },
+  { "cve": "CVE-2026-22769", "cvss": 10, "title": "Dell RecoverPoint Hard-coded Credentials" },
+  { "cve": "CVE-2025-52691", "cvss": 10, "title": "SmarterTools SmarterMail Unrestricted Upload of Dangerous File" },
+  { "cve": "CVE-2025-37164", "cvss": 10, "title": "HPE OneView Code Injection" },
+  { "cve": "CVE-2025-20393", "cvss": 10, "title": "Cisco Multiple Products Improper Input Validation" },
+  { "cve": "CVE-2025-55182", "cvss": 10, "title": "Meta React Server Components Remote Code Execution" },
+  { "cve": "CVE-2025-54253", "cvss": 10, "title": "Adobe Experience Manager Forms Code Execution" },
+  { "cve": "CVE-2025-10035", "cvss": 10, "title": "Fortra GoAnywhere MFT Deserialization of Untrusted Data" },
+  { "cve": "CVE-2025-43300", "cvss": 10, "title": "Apple iOS/iPadOS/macOS Out-of-Bounds Write" },
+  { "cve": "CVE-2025-20281", "cvss": 10, "title": "Cisco Identity Services Engine Injection" }
+]

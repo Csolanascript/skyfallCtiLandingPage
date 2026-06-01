@@ -1,0 +1,24 @@
+{
+  "targeted_software": [
+    { "product": "Microsoft Windows",      "total_vulns": 87  },
+    { "product": "Cisco IOS / IOS XE",    "total_vulns": 54  },
+    { "product": "Adobe Acrobat Reader",   "total_vulns": 41  },
+    { "product": "Apache HTTP Server",     "total_vulns": 38  },
+    { "product": "Oracle WebLogic",        "total_vulns": 32  },
+    { "product": "VMware vSphere / ESXi",  "total_vulns": 29  },
+    { "product": "Fortinet FortiOS",       "total_vulns": 26  },
+    { "product": "Palo Alto PAN-OS",       "total_vulns": 22  },
+    { "product": "Citrix NetScaler",       "total_vulns": 19  },
+    { "product": "Atlassian Confluence",   "total_vulns": 17  }
+  ],
+  "cisa_exploited": [
+    { "cve": "CVE-2025-37164", "cvss": 10.0, "title": "HPE OneView Code Injection" },
+    { "cve": "CVE-2025-20393", "cvss": 10.0, "title": "Cisco Multiple Products Improper Input Validation" },
+    { "cve": "CVE-2025-10035", "cvss": 10.0, "title": "Fortra GoAnywhere MFT Deserialization of Untrusted Data" },
+    { "cve": "CVE-2025-0282",  "cvss": 9.0,  "title": "Ivanti Connect Secure Stack-Based Buffer Overflow" },
+    { "cve": "CVE-2024-55591", "cvss": 9.8,  "title": "Fortinet FortiOS Authentication Bypass" },
+    { "cve": "CVE-2024-50603", "cvss": 10.0, "title": "Aviatrix Controller OS Command Injection" },
+    { "cve": "CVE-2024-4577",  "cvss": 9.8,  "title": "PHP CGI Argument Injection" },
+    { "cve": "CVE-2024-3400",  "cvss": 10.0, "title": "Palo Alto Networks PAN-OS Command Injection" }
+  ]
+}

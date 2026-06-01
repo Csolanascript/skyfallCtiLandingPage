@@ -1,0 +1,12 @@
+[
+  { "group": "Sandworm Team",    "campaigns": ["2016 Ukraine Electric Power Attack", "2015 Ukraine Electric Power Attack", "2022 Ukraine Electric Power Attack"], "total": 3 },
+  { "group": "APT41",            "campaigns": ["APT41 DUST", "C0017"], "total": 2 },
+  { "group": "APT29",            "campaigns": ["SolarWinds Compromise", "Operation Ghost"], "total": 2 },
+  { "group": "OilRig",           "campaigns": ["Juicy Mix", "Outer Space"], "total": 2 },
+  { "group": "Volt Typhoon",     "campaigns": ["Versa Director Zero Day Exploitation", "KV Botnet Activity"], "total": 2 },
+  { "group": "TEMP.Veles",       "campaigns": ["C0032", "Triton Safety Instrumented System Attack"], "total": 2 },
+  { "group": "Scattered Spider", "campaigns": ["C0027"], "total": 1 },
+  { "group": "Mustang Panda",    "campaigns": ["RedDelta Modified PlugX Infection Chain Operations"], "total": 1 },
+  { "group": "Lazarus Group",    "campaigns": ["Operation Dream Job"], "total": 1 },
+  { "group": "UNC3886",          "campaigns": ["RedPenguin"], "total": 1 }
+]

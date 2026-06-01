@@ -1,0 +1,15 @@
+[
+  { "label": "URL",          "value": 594298 },
+  { "label": "Indicator",    "value": 326511 },
+  { "label": "IP",           "value": 48144  },
+  { "label": "Note",         "value": 6296   },
+  { "label": "Domain",       "value": 3045   },
+  { "label": "CryptoWallet", "value": 2784   },
+  { "label": "Technique",    "value": 1248   },
+  { "label": "File",         "value": 1072   },
+  { "label": "Malware",      "value": 831    },
+  { "label": "Report",       "value": 609    },
+  { "label": "Vulnerability","value": 570    },
+  { "label": "IntrusionSet", "value": 191    },
+  { "label": "Campaign",     "value": 101    }
+]

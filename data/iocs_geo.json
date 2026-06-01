@@ -1,0 +1,12 @@
+[
+  { "label": "United States",  "value": 7391 },
+  { "label": "China",          "value": 4896 },
+  { "label": "Germany",        "value": 987  },
+  { "label": "Singapore",      "value": 905  },
+  { "label": "United Kingdom", "value": 784  },
+  { "label": "Brazil",         "value": 771  },
+  { "label": "India",          "value": 558  },
+  { "label": "France",         "value": 551  },
+  { "label": "Japan",          "value": 526  },
+  { "label": "Portugal",       "value": 488  }
+]

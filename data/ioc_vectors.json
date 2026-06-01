@@ -1,0 +1,12 @@
+[
+  { "label": "malicious-activity",   "value": 289430 },
+  { "label": "brute-force",          "value": 198712 },
+  { "label": "unauthorized-access",  "value": 87433  },
+  { "label": "social-engineering",   "value": 54219  },
+  { "label": "network-traffic",      "value": 43108  },
+  { "label": "spam",                 "value": 38764  },
+  { "label": "compromised",          "value": 21983  },
+  { "label": "anonymization",        "value": 12540  },
+  { "label": "cryptomining",         "value": 8832   },
+  { "label": "phishing",             "value": 6471   }
+]

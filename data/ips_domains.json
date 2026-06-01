@@ -1,0 +1,12 @@
+[
+  { "label": "Alibaba US Technology",  "value": 2079 },
+  { "label": "Google LLC",             "value": 1878 },
+  { "label": "Chinanet",              "value": 1691 },
+  { "label": "Microsoft Corporation", "value": 1666 },
+  { "label": "CHINA UNICOM China169", "value": 1383 },
+  { "label": "UCLOUD HK LIMITED",     "value": 1129 },
+  { "label": "DigitalOcean, LLC",     "value": 1117 },
+  { "label": "ONYPHE SAS",            "value": 753  },
+  { "label": "Akamai Connected Cloud", "value": 444 },
+  { "label": "Amazon.com, Inc.",      "value": 380  }
+]

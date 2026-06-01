@@ -1,0 +1,24 @@
+{
+  "feed": [
+    { "cve_id": "CVE-2026-20127", "cvss": 10.0, "epss": 0.97, "title": "Cisco Catalyst SD-WAN Controller and Manager Authentication Bypass",         "cisa_exploited": true,  "targeted_software": ["Cisco SD-WAN"], "technique_count": 3 },
+    { "cve_id": "CVE-2026-22769", "cvss": 10.0, "epss": 0.94, "title": "Dell RecoverPoint Hard-coded Credentials",                                   "cisa_exploited": false, "targeted_software": ["Dell RecoverPoint"], "technique_count": 2 },
+    { "cve_id": "CVE-2025-52691", "cvss": 10.0, "epss": 0.92, "title": "SmarterTools SmarterMail Unrestricted Upload of Dangerous File",             "cisa_exploited": false, "targeted_software": ["SmarterMail"], "technique_count": 2 },
+    { "cve_id": "CVE-2025-37164", "cvss": 10.0, "epss": 0.96, "title": "HPE OneView Code Injection",                                                  "cisa_exploited": true,  "targeted_software": ["HPE OneView"], "technique_count": 4 },
+    { "cve_id": "CVE-2025-20393", "cvss": 10.0, "epss": 0.95, "title": "Cisco Multiple Products Improper Input Validation",                           "cisa_exploited": true,  "targeted_software": ["Cisco IOS XE"], "technique_count": 3 },
+    { "cve_id": "CVE-2025-55182", "cvss": 10.0, "epss": 0.91, "title": "Meta React Server Components Remote Code Execution",                          "cisa_exploited": false, "targeted_software": ["React"], "technique_count": 5 },
+    { "cve_id": "CVE-2025-54253", "cvss": 10.0, "epss": 0.89, "title": "Adobe Experience Manager Forms Code Execution",                               "cisa_exploited": false, "targeted_software": ["Adobe AEM"], "technique_count": 3 },
+    { "cve_id": "CVE-2025-10035", "cvss": 10.0, "epss": 0.98, "title": "Fortra GoAnywhere MFT Deserialization of Untrusted Data",                    "cisa_exploited": true,  "targeted_software": ["Fortra GoAnywhere"], "technique_count": 4 },
+    { "cve_id": "CVE-2025-43300", "cvss": 10.0, "epss": 0.93, "title": "Apple iOS/iPadOS/macOS Out-of-Bounds Write",                                  "cisa_exploited": false, "targeted_software": ["Apple iOS","macOS"], "technique_count": 2 },
+    { "cve_id": "CVE-2025-20281", "cvss": 10.0, "epss": 0.95, "title": "Cisco Identity Services Engine Injection",                                    "cisa_exploited": true,  "targeted_software": ["Cisco ISE"], "technique_count": 3 },
+    { "cve_id": "CVE-2025-0282",  "cvss": 9.0,  "epss": 0.98, "title": "Ivanti Connect Secure Stack-Based Buffer Overflow",                          "cisa_exploited": true,  "targeted_software": ["Ivanti Connect Secure"], "technique_count": 5 },
+    { "cve_id": "CVE-2024-55591", "cvss": 9.8,  "epss": 0.99, "title": "Fortinet FortiOS Authentication Bypass",                                     "cisa_exploited": true,  "targeted_software": ["Fortinet FortiOS"], "technique_count": 4 },
+    { "cve_id": "CVE-2024-50603", "cvss": 10.0, "epss": 0.97, "title": "Aviatrix Controller OS Command Injection",                                   "cisa_exploited": true,  "targeted_software": ["Aviatrix Controller"], "technique_count": 6 },
+    { "cve_id": "CVE-2024-4577",  "cvss": 9.8,  "epss": 0.99, "title": "PHP CGI Argument Injection",                                                 "cisa_exploited": true,  "targeted_software": ["PHP"], "technique_count": 7 },
+    { "cve_id": "CVE-2024-3400",  "cvss": 10.0, "epss": 0.99, "title": "Palo Alto Networks PAN-OS Command Injection (Operation MidnightEclipse)",    "cisa_exploited": true,  "targeted_software": ["Palo Alto PAN-OS"], "technique_count": 8 },
+    { "cve_id": "CVE-2024-21412", "cvss": 8.1,  "epss": 0.96, "title": "Microsoft Windows SmartScreen Security Feature Bypass",                      "cisa_exploited": true,  "targeted_software": ["Microsoft Windows"], "technique_count": 4 },
+    { "cve_id": "CVE-2024-1709",  "cvss": 10.0, "epss": 0.98, "title": "ConnectWise ScreenConnect Authentication Bypass",                            "cisa_exploited": true,  "targeted_software": ["ConnectWise ScreenConnect"], "technique_count": 5 },
+    { "cve_id": "CVE-2023-46805", "cvss": 8.2,  "epss": 0.97, "title": "Ivanti Connect Secure and Policy Secure Authentication Bypass",              "cisa_exploited": true,  "targeted_software": ["Ivanti Connect Secure"], "technique_count": 4 },
+    { "cve_id": "CVE-2023-20198", "cvss": 10.0, "epss": 0.99, "title": "Cisco IOS XE Web UI Privilege Escalation",                                  "cisa_exploited": true,  "targeted_software": ["Cisco IOS XE"], "technique_count": 5 },
+    { "cve_id": "CVE-2023-4966",  "cvss": 9.4,  "epss": 0.98, "title": "Citrix Bleed — NetScaler ADC and Gateway Information Disclosure",            "cisa_exploited": true,  "targeted_software": ["Citrix NetScaler"], "technique_count": 6 }
+  ]
+}

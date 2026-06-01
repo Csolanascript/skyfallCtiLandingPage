@@ -1,0 +1,17 @@
+[
+  { "mitre_id": "T1059.001", "name": "PowerShell",                      "tactic": "Execution",        "actor_count": 62, "malware_count": 28 },
+  { "mitre_id": "T1078",     "name": "Valid Accounts",                  "tactic": "Initial Access",   "actor_count": 54, "malware_count": 19 },
+  { "mitre_id": "T1566.001", "name": "Spearphishing Attachment",        "tactic": "Initial Access",   "actor_count": 51, "malware_count": 33 },
+  { "mitre_id": "T1486",     "name": "Data Encrypted for Impact",       "tactic": "Impact",           "actor_count": 38, "malware_count": 44 },
+  { "mitre_id": "T1055",     "name": "Process Injection",               "tactic": "Defense Evasion", "actor_count": 47, "malware_count": 56 },
+  { "mitre_id": "T1021.001", "name": "Remote Desktop Protocol",         "tactic": "Lateral Movement", "actor_count": 35, "malware_count": 12 },
+  { "mitre_id": "T1003.001", "name": "LSASS Memory",                    "tactic": "Credential Access","actor_count": 41, "malware_count": 22 },
+  { "mitre_id": "T1562.001", "name": "Disable or Modify Tools",         "tactic": "Defense Evasion", "actor_count": 37, "malware_count": 31 },
+  { "mitre_id": "T1190",     "name": "Exploit Public-Facing Application","tactic": "Initial Access",  "actor_count": 44, "malware_count": 8  },
+  { "mitre_id": "T1041",     "name": "Exfiltration Over C2 Channel",   "tactic": "Exfiltration",     "actor_count": 36, "malware_count": 29 },
+  { "mitre_id": "T1047",     "name": "Windows Management Instrumentation","tactic": "Execution",      "actor_count": 29, "malware_count": 18 },
+  { "mitre_id": "T1070.001", "name": "Clear Windows Event Logs",        "tactic": "Defense Evasion", "actor_count": 28, "malware_count": 15 },
+  { "mitre_id": "T1082",     "name": "System Information Discovery",    "tactic": "Discovery",        "actor_count": 56, "malware_count": 41 },
+  { "mitre_id": "T1027",     "name": "Obfuscated Files or Information", "tactic": "Defense Evasion", "actor_count": 49, "malware_count": 52 },
+  { "mitre_id": "T1105",     "name": "Ingress Tool Transfer",           "tactic": "Command and Control","actor_count": 43, "malware_count": 38 }
+]
