@@ -1,0 +1,8 @@
+services:
+  landing:
+    build: .
+    image: skyfall-landing:latest
+    container_name: skyfall-landing
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
