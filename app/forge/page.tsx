@@ -1,6 +1,6 @@
 'use client'
-import ForgeDemo from '@/components/forge/ForgeDemo'
+import ForgeLayout from '@/components/builder/ForgeLayout'
 
 export default function ForgePage() {
-  return <ForgeDemo />
+  return <ForgeLayout />
 }

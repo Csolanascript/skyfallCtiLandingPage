@@ -1,15 +1,46 @@
-[
-  { "label": "URL",          "value": 594298 },
-  { "label": "Indicator",    "value": 326511 },
-  { "label": "IP",           "value": 48144  },
-  { "label": "Note",         "value": 6296   },
-  { "label": "Domain",       "value": 3045   },
-  { "label": "CryptoWallet", "value": 2784   },
-  { "label": "Technique",    "value": 1248   },
-  { "label": "File",         "value": 1072   },
-  { "label": "Malware",      "value": 831    },
-  { "label": "Report",       "value": 609    },
-  { "label": "Vulnerability","value": 570    },
-  { "label": "IntrusionSet", "value": 191    },
-  { "label": "Campaign",     "value": 101    }
-]
+{
+  "node_types": [
+    { "label": "URL",          "value": 594298 },
+    { "label": "Indicator",    "value": 326511 },
+    { "label": "IP",           "value": 48144  },
+    { "label": "Note",         "value": 6296   },
+    { "label": "Domain",       "value": 3045   },
+    { "label": "CryptoWallet", "value": 2784   },
+    { "label": "Technique",    "value": 1248   },
+    { "label": "File",         "value": 1072   },
+    { "label": "Malware",      "value": 831    },
+    { "label": "Report",       "value": 609    },
+    { "label": "Vulnerability","value": 570    },
+    { "label": "IntrusionSet", "value": 191    },
+    { "label": "Campaign",     "value": 101    }
+  ],
+  "rel_types": [
+    { "label": "INDICATES",    "value": 649619 },
+    { "label": "CREATED_BY",   "value": 625398 },
+    { "label": "HAS_MARKING",  "value": 620986 },
+    { "label": "REFERENCES",   "value": 20273  },
+    { "label": "USES",         "value": 19503  },
+    { "label": "TARGETS",      "value": 8841   },
+    { "label": "ATTRIBUTED_TO","value": 3210   }
+  ],
+  "ingestion_type": [
+    { "label": "Disk (STIX files)",    "value": 969341 },
+    { "label": "Kafka (live stream)",  "value": 16067  }
+  ],
+  "data_density": [
+    { "type": "Indicator",     "avg_properties": 14 },
+    { "type": "Malware",       "avg_properties": 11 },
+    { "type": "IntrusionSet",  "avg_properties": 9  },
+    { "type": "Technique",     "avg_properties": 8  },
+    { "type": "Vulnerability", "avg_properties": 7  },
+    { "type": "Campaign",      "avg_properties": 6  },
+    { "type": "IP",            "avg_properties": 5  },
+    { "type": "Domain",        "avg_properties": 4  }
+  ],
+  "unconnected": [
+    { "type": "Note",         "total": 612  },
+    { "type": "URL",          "total": 4821 },
+    { "type": "CryptoWallet", "total": 189  },
+    { "type": "File",         "total": 93   }
+  ]
+}

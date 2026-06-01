@@ -1,12 +1,24 @@
-[
-  { "group": "Sandworm Team",    "campaigns": ["2016 Ukraine Electric Power Attack", "2015 Ukraine Electric Power Attack", "2022 Ukraine Electric Power Attack"], "total": 3 },
-  { "group": "APT41",            "campaigns": ["APT41 DUST", "C0017"], "total": 2 },
-  { "group": "APT29",            "campaigns": ["SolarWinds Compromise", "Operation Ghost"], "total": 2 },
-  { "group": "OilRig",           "campaigns": ["Juicy Mix", "Outer Space"], "total": 2 },
-  { "group": "Volt Typhoon",     "campaigns": ["Versa Director Zero Day Exploitation", "KV Botnet Activity"], "total": 2 },
-  { "group": "TEMP.Veles",       "campaigns": ["C0032", "Triton Safety Instrumented System Attack"], "total": 2 },
-  { "group": "Scattered Spider", "campaigns": ["C0027"], "total": 1 },
-  { "group": "Mustang Panda",    "campaigns": ["RedDelta Modified PlugX Infection Chain Operations"], "total": 1 },
-  { "group": "Lazarus Group",    "campaigns": ["Operation Dream Job"], "total": 1 },
-  { "group": "UNC3886",          "campaigns": ["RedPenguin"], "total": 1 }
-]
+{
+  "most_dangerous": [
+    { "group": "Sandworm Team",    "campaigns": "2022 Ukraine Electric Power, 2016 Ukraine Electric Power, 2015 Ukraine Electric Power", "total": 3 },
+    { "group": "APT41",            "campaigns": "APT41 DUST, C0017",                                                                     "total": 2 },
+    { "group": "APT29",            "campaigns": "SolarWinds Compromise, Operation Ghost",                                                "total": 2 },
+    { "group": "OilRig",           "campaigns": "Juicy Mix, Outer Space",                                                                "total": 2 },
+    { "group": "Volt Typhoon",     "campaigns": "Versa Director Zero Day, KV Botnet Activity",                                           "total": 2 },
+    { "group": "TEMP.Veles",       "campaigns": "C0032, Triton Safety Instrumented System Attack",                                       "total": 2 },
+    { "group": "Scattered Spider", "campaigns": "C0027",                                                                                 "total": 1 },
+    { "group": "Mustang Panda",    "campaigns": "RedDelta Modified PlugX",                                                               "total": 1 },
+    { "group": "Lazarus Group",    "campaigns": "Operation Dream Job",                                                                   "total": 1 },
+    { "group": "UNC3886",          "campaigns": "RedPenguin",                                                                            "total": 1 }
+  ],
+  "aliases": [
+    { "name": "APT29",         "aliases": "Cozy Bear, The Dukes, NOBELIUM, Iron Hemlock" },
+    { "name": "APT28",         "aliases": "Fancy Bear, Sofacy, STRONTIUM, Sednit" },
+    { "name": "Lazarus Group", "aliases": "HIDDEN COBRA, Guardians of Peace, ZINC, Whois Team" },
+    { "name": "APT41",         "aliases": "Double Dragon, Winnti, BARIUM, Bronze Atlas" },
+    { "name": "Sandworm Team", "aliases": "IRIDIUM, Voodoo Bear, BlackEnergy, TeleBots" },
+    { "name": "OilRig",        "aliases": "APT34, Helix Kitten, CHRYSENE, Crambus" },
+    { "name": "Volt Typhoon",  "aliases": "BRONZE SILHOUETTE, Vanguard Panda, Dev-0391" },
+    { "name": "MuddyWater",    "aliases": "MERCURY, Static Kitten, Seedworm, TEMP.Zagros" }
+  ]
+}

@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import NologinLogo from '@/components/ui/NologinLogo'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -13,24 +12,23 @@ import {
   Shield, Radio, Lock, ChevronDown, Database, Globe,
   Network, ScanSearch, BarChart3, LayoutDashboard,
   ArrowRight, Share2, Zap, Crosshair, BrainCircuit, GitMerge,
-  GitBranch, ExternalLink, Terminal, Layers,
+  GitBranch, ExternalLink, Terminal, Layers, Eye,
 } from 'lucide-react'
 
 gsap.registerPlugin(ScrollTrigger)
 
 /* ─── Design tokens ──────────────────────────────────────── */
-const R   = '#E85419'
-const RG  = '0 0 22px rgba(232,84,25,0.55)'
-const RD  = 'rgba(232,84,25,0.28)'
-const BG  = '#000000'
-const TXT = '#E2E2E2'
-const MUT = 'rgba(212,212,212,0.55)'
-const BRD = 'rgba(255,255,255,0.12)'
-const SRF = 'rgba(232,84,25,0.06)'
-const GRN = '#00FF41'
+const R    = '#E85419'
+const RG   = '0 0 22px rgba(232,84,25,0.55)'
+const RD   = 'rgba(232,84,25,0.28)'
+const BG   = '#000000'
+const TXT  = '#E2E2E2'
+const MUT  = 'rgba(212,212,212,0.55)'
+const SRF  = 'rgba(232,84,25,0.06)'
+const GRN  = '#00FF41'
 const MONO = "'JetBrains Mono','Share Tech Mono',monospace"
 
-/* ─── Bracket corners component ──────────────────────────── */
+/* ─── Bracket corners ────────────────────────────────────── */
 function Brackets({ color = R, size = 10 }: { color?: string; size?: number }) {
   const s: React.CSSProperties = { position: 'absolute', width: size, height: size }
   return (
@@ -53,7 +51,7 @@ function Scanlines() {
   )
 }
 
-/* ─── Inline keyframes ───────────────────────────────────── */
+/* ─── Keyframes ──────────────────────────────────────────── */
 const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 @keyframes lp-glitch {
@@ -163,8 +161,6 @@ const CAPABILITIES = [
   { icon: GitMerge,     title: 'MULTI-SOURCE FUSION',     body: 'Cross-source deduplication merges fragments from MITRE, OTX, Telegram, GitHub, and IntelOwl enrichments into complete, non-redundant threat profiles.' },
 ]
 
-/* ─── Data sources (3-tier) ──────────────────────────────── */
-
 const THREAT_FEED_BASE = [
   { region: 'RU', actor: 'APT29',      type: 'C2 Infrastructure', severity: 'CRITICAL' },
   { region: 'CN', actor: 'APT41',      type: 'Phishing Kit',       severity: 'HIGH'     },
@@ -175,13 +171,12 @@ const THREAT_FEED_BASE = [
 
 const SEV_COLOR: Record<string, string> = { CRITICAL: R, HIGH: '#FF8C00', MEDIUM: '#FFD700' }
 
-/* ─── Card component for pipeline steps ─────────────────── */
+/* ─── Pipeline card ──────────────────────────────────────── */
 function PipelineCard({ step, idx }: { step: typeof PIPELINE[0]; idx: number }) {
   const [hov, setHov] = useState(false)
   const Icon = step.icon
   return (
     <div
-      className="step-card"
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
@@ -233,34 +228,30 @@ export default function LandingPage() {
   const pipelineRef = useRef<HTMLDivElement>(null)
   const trackRef    = useRef<HTMLDivElement>(null)
   const progressRef = useRef<HTMLDivElement>(null)
-
   const heroTitleRef = useRef<HTMLHeadingElement>(null)
   const heroTagRef   = useRef<HTMLDivElement>(null)
   const heroSubRef   = useRef<HTMLParagraphElement>(null)
   const heroCtaRef   = useRef<HTMLDivElement>(null)
   const heroStatsRef = useRef<HTMLDivElement>(null)
 
-  const [clock, setClock]   = useState('')
+  const [clock,   setClock]   = useState('')
   const [scrolled, setScrolled] = useState(false)
-  const [feed, setFeed]     = useState(() =>
+  const [feed,    setFeed]    = useState(() =>
     THREAT_FEED_BASE.map((r, i) => ({ ...r, ts: `00:0${i}:00 UTC` }))
   )
   const [evtCount, setEvtCount] = useState(2341)
 
-  /* Clock */
   useEffect(() => {
     const tick = () => setClock(new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC')
     tick(); const id = setInterval(tick, 1000); return () => clearInterval(id)
   }, [])
 
-  /* Scroll nav */
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
-  /* Live threat feed */
   useEffect(() => {
     const actors  = ['APT28','FIN7','Lazarus','APT41','Scattered Spider','ALPHV','LockBit','Storm-0558']
     const types   = ['Malware Hash','C2 Domain','Phishing URL','Exploit Kit','Credential Dump','Ransomware']
@@ -280,7 +271,6 @@ export default function LandingPage() {
     return () => clearInterval(id)
   }, [])
 
-  /* Hero entrance animation */
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power2.out' } })
     tl.from(heroTagRef.current,   { opacity: 0, y: -10, duration: 0.6, delay: 0.3 })
@@ -291,7 +281,6 @@ export default function LandingPage() {
     return () => { tl.kill() }
   }, [])
 
-  /* Pipeline horizontal scroll */
   useEffect(() => {
     if (!pipelineRef.current || !trackRef.current) return
     const totalW = trackRef.current.scrollWidth - window.innerWidth
@@ -308,7 +297,6 @@ export default function LandingPage() {
     return () => ctx.revert()
   }, [])
 
-  /* Platform section entrance */
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from('.lp-module-card', {
@@ -340,7 +328,6 @@ export default function LandingPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-
       <div style={{ ...base, minHeight: '100vh', position: 'relative', overflowX: 'hidden' }}>
 
         {/* ══════════ NAVBAR ══════════ */}
@@ -351,37 +338,22 @@ export default function LandingPage() {
           background: scrolled ? 'rgba(0,0,0,0.95)' : 'transparent',
           borderBottom: scrolled ? `1px solid ${RD}` : 'none',
         }}>
-          {/* Logo */}
           <a href="#lp-hero" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <div style={{ width: 2, height: 22, background: R, boxShadow: RG, flexShrink: 0 }} />
             <Shield size={15} color={R} />
             <span style={{ fontSize: 13, letterSpacing: '0.3em', color: TXT }}>
               SKYFALL<span style={{ color: R }}>_</span>CTI
             </span>
-            <span className="lp-flicker" style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.15em', display: 'none' }}>
-              // THREAT_INTELLIGENCE_COMMAND_CENTER
-            </span>
           </a>
-          {/* Links */}
           <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
-            {[['PIPELINE','#lp-pipeline'],['PLATFORM','#lp-platform'],['TELEMETRY','#lp-globe'],['FORGE','#lp-forge']].map(([l,h]) => (
+            {[['PIPELINE','#lp-pipeline'],['PLATFORM','#lp-platform'],['TELEMETRY','#lp-globe']].map(([l,h]) => (
               <a key={h} href={h} style={{ fontSize: 10, letterSpacing: '0.22em', color: MUT, textDecoration: 'none', transition: 'color 150ms' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = R }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = MUT }}>
                 {l}
               </a>
             ))}
-            <a href="/forge" style={{
-              fontSize: 10, letterSpacing: '0.22em', color: R, textDecoration: 'none',
-              padding: '3px 10px', border: `1px solid ${RD}`, transition: 'all 150ms',
-            }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = R; el.style.color = '#000'; }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.color = R; }}
-            >
-              STIX FORGE
-            </a>
           </div>
-          {/* nologin collab — navbar */}
           <a href="https://nologin.es/en/" target="_blank" rel="noopener noreferrer"
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 14px', border: '1px solid rgba(255,255,255,0.08)', textDecoration: 'none', transition: 'border-color 200ms' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = RD }}
@@ -390,13 +362,12 @@ export default function LandingPage() {
             <span style={{ fontSize: 8, color: '#4a4a4a', letterSpacing: '0.18em', whiteSpace: 'nowrap' }}>IN COLLAB. WITH</span>
             <NologinLogo height={32} />
           </a>
-          {/* Right HUD */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 10 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: GRN }}>
               <Radio size={8} style={{ animation: 'lp-flicker 3s infinite' }} /> ACTIVE
             </span>
             <span style={{ color: '#4a4a4a' }}>{clock}</span>
-            <Link href="/dashboard"
+            <Link href="/enter"
               style={{
                 display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
                 border: `1px solid ${R}`, color: R, textDecoration: 'none',
@@ -414,18 +385,15 @@ export default function LandingPage() {
         <section id="lp-hero" style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
           <ParticleCanvas />
           <Scanlines />
-          {/* Vignette */}
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3,
             background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.85) 100%)' }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 160, pointerEvents: 'none', zIndex: 4,
             background: 'linear-gradient(to bottom, transparent, #000)' }} />
-          {/* Content */}
           <div style={{
             position: 'relative', zIndex: 6, height: '100%',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             textAlign: 'center', padding: '0 24px',
           }}>
-            {/* Badge */}
             <div ref={heroTagRef} style={{
               display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28,
               padding: '6px 16px', border: `1px solid ${RD}`, fontSize: 11, letterSpacing: '0.28em', color: R,
@@ -435,7 +403,6 @@ export default function LandingPage() {
               <span style={{ color: RD }}>—</span>
               FEED ACTIVE
             </div>
-            {/* Glitch title */}
             <h1
               ref={heroTitleRef}
               className="lp-glitch"
@@ -450,9 +417,8 @@ export default function LandingPage() {
               <span style={{ color: R }}>Correlate.</span>{' '}
               <span style={{ color: R }}>Neutralize.</span>
             </p>
-            {/* CTAs */}
             <div ref={heroCtaRef} style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 52 }}>
-              <a href="/dashboard" style={{
+              <Link href="/enter" style={{
                 padding: '12px 32px', background: R, color: '#000', textDecoration: 'none',
                 fontSize: 12, fontWeight: 900, letterSpacing: '0.22em',
                 boxShadow: `0 0 28px rgba(232,84,25,0.5)`, position: 'relative', transition: 'opacity 150ms',
@@ -460,9 +426,9 @@ export default function LandingPage() {
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
               >
-                <Brackets color={R} size={8} />
-                EXPLORE PIPELINE
-              </a>
+                <Brackets color="#000" size={8} />
+                ENTER PLATFORM
+              </Link>
               <a href="https://nologin.es/en/contact" target="_blank" rel="noopener noreferrer" style={{
                 padding: '12px 32px', border: `1px solid ${RD}`, color: R,
                 textDecoration: 'none', fontSize: 12, letterSpacing: '0.22em',
@@ -473,13 +439,23 @@ export default function LandingPage() {
               >
                 REQUEST ACCESS
               </a>
+              <Link href="/demo" style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '12px 32px', border: '1px solid rgba(34,211,238,0.3)', color: '#22d3ee',
+                textDecoration: 'none', fontSize: 12, letterSpacing: '0.22em',
+                transition: 'all 200ms',
+              }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(34,211,238,0.08)'; el.style.borderColor = '#22d3ee' }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.borderColor = 'rgba(34,211,238,0.3)' }}
+              >
+                <Eye size={12} /> VIEW DEMO ANALYSIS
+              </Link>
             </div>
-            {/* Stats */}
             <div ref={heroStatsRef} style={{ display: 'flex', gap: 36, flexWrap: 'wrap', justifyContent: 'center' }}>
               {[
-                { icon: Shield,   v: '9+',  l: 'CTI DATA SOURCES' },
-                { icon: Database, v: '50+', l: 'INTELOWL ANALYZERS' },
-                { icon: Globe,    v: '14ms', l: 'GRAPH CORRELATION' },
+                { icon: Shield,   v: '9+',   l: 'CTI DATA SOURCES'    },
+                { icon: Database, v: '50+',  l: 'INTELOWL ANALYZERS'  },
+                { icon: Globe,    v: '14ms', l: 'GRAPH CORRELATION'   },
               ].map(({ icon: Icon, v, l }) => (
                 <div key={l} className="stat-item" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <Icon size={13} color={R} />
@@ -491,18 +467,16 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
-          {/* nologin collab — hero */}
-          <div style={{ marginTop: 36, display: 'flex', alignItems: 'center', gap: 12, zIndex: 6 }}>
-            <span style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.22em' }}>IN COLLABORATION WITH</span>
-            <a href="https://nologin.es/en/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', opacity: 0.7, transition: 'opacity 200ms' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.7' }}
-            >
-              <NologinLogo height={38} />
-            </a>
+          <div style={{ position: 'absolute', top: 72, left: 24, fontSize: 9, color: RD, letterSpacing: '0.15em', zIndex: 6 }}
+            className="lp-flicker">
+            <div>NODE_01 / MADRID-EU</div>
+            <div style={{ color: 'rgba(0,255,65,0.5)', marginTop: 4 }}>● GRAPH ACTIVE</div>
           </div>
-
-          {/* Scroll cue */}
+          <div style={{ position: 'absolute', top: 72, right: 24, textAlign: 'right', fontSize: 9, color: RD, letterSpacing: '0.15em', zIndex: 6 }}
+            className="lp-flicker">
+            <div>KAFKA TOPICS: 6 ACTIVE</div>
+            <div style={{ color: 'rgba(0,255,65,0.5)', marginTop: 4 }}>● STIX 2.1 NORMALIZED</div>
+          </div>
           <div className="lp-bounce" style={{
             position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
@@ -511,26 +485,15 @@ export default function LandingPage() {
             <span style={{ fontSize: 9, letterSpacing: '0.22em' }}>SCROLL</span>
             <ChevronDown size={14} />
           </div>
-          {/* HUD corners */}
-          <div className="lp-flicker" style={{ position: 'absolute', top: 72, left: 24, fontSize: 9, color: RD, letterSpacing: '0.15em', zIndex: 6 }}>
-            <div>NODE_01 / MADRID-EU</div>
-            <div style={{ color: 'rgba(0,255,65,0.5)', marginTop: 4 }}>● GRAPH ACTIVE</div>
-          </div>
-          <div className="lp-flicker" style={{ position: 'absolute', top: 72, right: 24, textAlign: 'right', fontSize: 9, color: RD, letterSpacing: '0.15em', zIndex: 6 }}>
-            <div>KAFKA TOPICS: 6 ACTIVE</div>
-            <div style={{ color: 'rgba(0,255,65,0.5)', marginTop: 4 }}>● STIX 2.1 NORMALIZED</div>
-          </div>
         </section>
 
-        {/* ══════════ PIPELINE (horizontal scroll) ══════════ */}
+        {/* ══════════ PIPELINE ══════════ */}
         <section id="lp-pipeline" ref={pipelineRef} style={{ position: 'relative', height: '100vh', overflow: 'hidden', background: BG }}>
-          {/* Progress bar */}
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: '#1a1a1a', zIndex: 20 }}>
             <div ref={progressRef} style={{ height: '100%', background: R, boxShadow: `0 0 8px rgba(232,84,25,0.6)`, width: '0%', transition: 'none' }} />
           </div>
-          {/* Header */}
           <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, paddingTop: 64, paddingBottom: 20,
+            position: 'absolute', top: 0, left: 0, right: 0,
             padding: '64px 32px 20px', zIndex: 10, background: BG,
             borderBottom: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
           }}>
@@ -542,7 +505,6 @@ export default function LandingPage() {
               <Zap size={10} color={R} /> SCROLL TO TRAVERSE
             </div>
           </div>
-          {/* Track */}
           <div ref={trackRef} style={{ position: 'absolute', top: 136, left: 0, display: 'flex', alignItems: 'center', paddingLeft: 32, willChange: 'transform' }}>
             {PIPELINE.map((step, i) => (
               <div key={step.id} style={{ display: 'flex', alignItems: 'center' }}>
@@ -557,7 +519,6 @@ export default function LandingPage() {
                 )}
               </div>
             ))}
-            {/* End cap */}
             <div style={{ flexShrink: 0, width: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginLeft: 28, padding: '0 28px' }}>
               <div style={{ width: 1, height: 56, background: 'linear-gradient(to bottom, #E85419, transparent)' }} />
               <div style={{ textAlign: 'center' }}>
@@ -565,7 +526,7 @@ export default function LandingPage() {
                 <div className="lp-neon" style={{ fontSize: 36, fontWeight: 900 }}>4 MIN</div>
                 <div style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.15em', marginTop: 4 }}>AVG MEAN TIME TO DETECT</div>
               </div>
-              <a href="#lp-platform" style={{
+              <Link href="/enter" style={{
                 marginTop: 12, padding: '8px 20px', border: `1px solid ${RD}`,
                 color: R, fontSize: 10, letterSpacing: '0.2em', textDecoration: 'none',
                 transition: 'all 200ms',
@@ -574,10 +535,9 @@ export default function LandingPage() {
                 onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.color = R }}
               >
                 EXPLORE PLATFORM
-              </a>
+              </Link>
             </div>
           </div>
-          {/* Bottom HUD */}
           <div style={{ position: 'absolute', bottom: 20, left: 28, right: 28, display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#4a4a4a', letterSpacing: '0.12em' }}>
             <div style={{ display: 'flex', gap: 20 }}>
               {[{ c: R, l: 'CRAWLERS ACTIVE (6)' }, { c: '#22d3ee', l: 'KAFKA TOPICS STREAMING (6)' }, { c: '#a855f7', l: 'NEO4J GRAPH ACTIVE' }].map(({ c, l }) => (
@@ -593,7 +553,6 @@ export default function LandingPage() {
 
         {/* ══════════ PLATFORM MODULES ══════════ */}
         <section id="lp-platform" style={{ position: 'relative', background: BG, padding: '80px 28px', overflow: 'hidden' }}>
-          {/* bg grid */}
           <div style={{ position: 'absolute', inset: 0, opacity: 0.03,
             backgroundImage: 'linear-gradient(#E85419 1px,transparent 1px),linear-gradient(90deg,#E85419 1px,transparent 1px)',
             backgroundSize: '40px 40px' }} />
@@ -607,7 +566,6 @@ export default function LandingPage() {
                 Four integrated modules expose the full CTI pipeline to analysts — from raw IOC submission to graph-level correlation and AI-powered querying.
               </p>
             </div>
-            {/* Modules grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 10, marginBottom: 72 }}>
               {MODULES.map(m => {
                 const Icon = m.icon
@@ -634,11 +592,8 @@ export default function LandingPage() {
                 )
               })}
             </div>
-            {/* Entropy + capabilities */}
             <div style={{ display: 'flex', gap: 56, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              {/* Dual canvas comparison */}
               <div style={{ flexShrink: 0, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                {/* Chaos panel */}
                 <div>
                   <div style={{ position: 'relative', padding: 4, border: `1px solid #2a2a2a` }}>
                     <Brackets color="#4a4a4a" size={10} />
@@ -646,9 +601,7 @@ export default function LandingPage() {
                   </div>
                   <div style={{ fontSize: 9, letterSpacing: '0.15em', marginTop: 8, textAlign: 'center', color: '#4a4a4a' }}>CHAOS / RAW DATA</div>
                 </div>
-                {/* Arrow */}
                 <div style={{ display: 'flex', alignItems: 'center', height: 320, marginTop: 4, color: R, fontSize: 18, opacity: 0.5 }}>→</div>
-                {/* Graph panel */}
                 <div>
                   <div style={{ position: 'relative', padding: 4, border: `1px solid ${RD}` }}>
                     <Brackets color={R} size={10} />
@@ -657,7 +610,6 @@ export default function LandingPage() {
                   <div style={{ fontSize: 9, letterSpacing: '0.15em', marginTop: 8, textAlign: 'center', color: R }}>STRUCTURE / INTEL</div>
                 </div>
               </div>
-              {/* Capabilities */}
               <div id="lp-caps" style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 22, marginTop: 8 }}>
                 <div style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.2em', marginBottom: 4 }}>INTELLIGENCE ENGINE CAPABILITIES</div>
                 {CAPABILITIES.map(({ icon: Icon, title, body }) => (
@@ -678,7 +630,6 @@ export default function LandingPage() {
                 ))}
               </div>
             </div>
-            {/* Metric strip */}
             <div style={{ marginTop: 64, paddingTop: 28, borderTop: '1px solid #1a1a1a', display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 20 }}>
               {[['992.044','NODES'],['1.992.617','RELATIONSHIPS']].map(([v,l]) => (
                 <div key={l} style={{ textAlign: 'center' }}>
@@ -703,13 +654,10 @@ export default function LandingPage() {
               </p>
             </div>
             <div style={{ display: 'flex', gap: 36, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              {/* Globe */}
               <div style={{ flex: 1, minWidth: 300 }}>
                 <LandingGlobe />
               </div>
-              {/* Feed + CTA */}
               <div id="lp-feed" style={{ width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {/* Feed panel */}
                 <div style={{ border: '1px solid #1a1a1a' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#0D0D0D', borderBottom: '1px solid #1a1a1a' }}>
                     <span style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.18em' }}>THREAT FEED</span>
@@ -745,122 +693,10 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ══════════ STIX FORGE ══════════ */}
-        <section id="lp-forge" style={{ background: BG, borderTop: '1px solid #1a1a1a', padding: '80px 28px' }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-            <div style={{ marginBottom: 48 }}>
-              <div style={{ fontSize: 10, color: R, letterSpacing: '0.25em', marginBottom: 8 }}>05 / STIX FORGE</div>
-              <div style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 900, letterSpacing: '0.15em', color: '#fff', lineHeight: 1.15 }}>
-                BUILD INTEL.<br /><span style={{ color: R }}>SHIP INTEL.</span>
-              </div>
-              <p style={{ marginTop: 14, fontSize: 12, color: MUT, maxWidth: 540, lineHeight: 1.8 }}>
-                Visual STIX 2.1 bundle composer. Drag entities onto the canvas, connect them with typed relationships, and export a standards-compliant JSON bundle — all in the browser, no backend needed.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              {/* Feature cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, flex: 1, minWidth: 280 }}>
-                {[
-                  {
-                    color: '#9933FF',
-                    title: '80 ATT&CK TECHNIQUES',
-                    body: 'Full static catalog of MITRE ATT&CK techniques — T-IDs, names, and descriptions — searchable client-side with no database required.',
-                    tags: ['T1059', 'T1566', 'T1486', 'T1055', 'T1003'],
-                  },
-                  {
-                    color: '#FFAA00',
-                    title: '30 CWE WEAKNESSES',
-                    body: 'Embedded CWE catalog for attack-pattern entities. Search by CWE-ID or name and auto-fill fields in the entity form.',
-                    tags: ['CWE-79', 'CWE-89', 'CWE-502', 'CWE-787', 'CWE-918'],
-                  },
-                  {
-                    color: R,
-                    title: '17 ENTITY TYPES',
-                    body: 'Full palette of STIX 2.1 SDOs and SCOs — indicator, malware, threat-actor, intrusion-set, campaign, vulnerability, and more.',
-                    tags: ['indicator', 'malware', 'threat-actor', 'vulnerability', 'tool'],
-                  },
-                  {
-                    color: '#22d3ee',
-                    title: 'RELATIONSHIP MATRIX',
-                    body: 'Typed SRO relationships enforced by the STIX 2.1 spec — uses, indicates, exploits, targets, attributed-to, and more. Drawn as bezier arrows on the canvas.',
-                    tags: ['uses', 'indicates', 'exploits', 'targets', 'attributed-to'],
-                  },
-                ].map((card) => (
-                  <div key={card.title} style={{
-                    position: 'relative', padding: 20,
-                    background: '#0D0D0D', border: '1px solid #1a1a1a',
-                    display: 'flex', flexDirection: 'column', gap: 10,
-                    transition: 'border-color 160ms, background 160ms',
-                  }}
-                    onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.borderColor = `${card.color}40`; el.style.background = `${card.color}08`; }}
-                    onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#1a1a1a'; el.style.background = '#0D0D0D'; }}
-                  >
-                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: card.color, opacity: 0.7 }} />
-                    <div style={{ position: 'absolute', top: -1, left: -1, width: 8, height: 8, borderTop: `2px solid ${card.color}`, borderLeft: `2px solid ${card.color}` }} />
-                    <div style={{ position: 'absolute', bottom: -1, right: -1, width: 8, height: 8, borderBottom: `2px solid ${card.color}`, borderRight: `2px solid ${card.color}` }} />
-                    <div style={{ fontSize: 11, fontWeight: 700, color: card.color, letterSpacing: '0.18em' }}>{card.title}</div>
-                    <p style={{ fontSize: 11, color: MUT, lineHeight: 1.7, flex: 1 }}>{card.body}</p>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {card.tags.map((t) => (
-                        <span key={t} style={{ fontSize: 8, padding: '2px 6px', border: `1px solid ${card.color}30`, color: `${card.color}88`, letterSpacing: '0.1em' }}>{t}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* CTA panel */}
-              <div style={{ flexShrink: 0, width: 280 }}>
-                <div style={{ position: 'relative', border: `1px solid ${RD}`, padding: '28px 24px', background: SRF }}>
-                  <Brackets color={R} size={10} />
-                  <div style={{ fontSize: 9, color: R, letterSpacing: '0.2em', marginBottom: 12 }}>
-                    ▶ TRY IT NOW — LIVE DEMO
-                  </div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', letterSpacing: '0.1em', marginBottom: 12, lineHeight: 1.3 }}>
-                    BUILD YOUR FIRST STIX BUNDLE
-                  </div>
-                  <p style={{ fontSize: 11, color: MUT, lineHeight: 1.7, marginBottom: 24 }}>
-                    No login. No database. No setup.<br />
-                    Compose, connect, and download a STIX 2.1 bundle directly in your browser.
-                  </p>
-                  <a href="/forge" style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    padding: '12px 24px', background: R, color: '#000',
-                    textDecoration: 'none', fontSize: 11, fontWeight: 900,
-                    letterSpacing: '0.22em', position: 'relative',
-                    boxShadow: `0 0 24px rgba(232,84,25,0.4)`,
-                    transition: 'opacity 150ms',
-                  }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.85'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
-                  >
-                    <Brackets color="#000" size={7} />
-                    OPEN STIX FORGE →
-                  </a>
-                  <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {[
-                      '17 STIX 2.1 entity types',
-                      '110 pre-loaded ATT&CK + CWE',
-                      'Client-side only · zero DB calls',
-                      'Download valid STIX 2.1 JSON',
-                    ].map((item) => (
-                      <div key={item} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 9, color: MUT, letterSpacing: '0.1em' }}>
-                        <span style={{ color: '#00FF41', fontSize: 11 }}>✓</span>
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* ══════════ INTEGRATIONS ══════════ */}
         <IntegrationsSection />
 
-        {/* ══════════ START USING IT NOW ══════════ */}
+        {/* ══════════ CTA ══════════ */}
         <section style={{ background: BG, padding: '80px 28px 100px', borderTop: '1px solid #1a1a1a', textAlign: 'center' }}>
           <div style={{ maxWidth: 680, margin: '0 auto', position: 'relative' }}>
             <Brackets color={R} size={20} />
@@ -875,7 +711,7 @@ export default function LandingPage() {
               <p style={{ fontSize: 13, color: MUT, lineHeight: 1.8, marginBottom: 40, maxWidth: 480, margin: '0 auto 40px' }}>
                 All modules are operational — IOC Analysis Engine, AI CTI Assistant, Graph Console, and Analytics Dashboards. Start investigating threats now.
               </p>
-              <Link href="/dashboard"
+              <Link href="/enter"
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 12,
                   padding: '18px 52px', background: R, color: '#000',
@@ -903,10 +739,7 @@ export default function LandingPage() {
         <section style={{ background: BG, padding: '40px 28px', borderTop: '1px solid #1a1a1a' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
             <div style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.28em' }}>DEVELOPED IN COLLABORATION WITH</div>
-            <a
-              href="https://nologin.es/en/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <a href="https://nologin.es/en/" target="_blank" rel="noopener noreferrer"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 14, padding: '14px 28px', border: `1px solid ${RD}`, textDecoration: 'none', position: 'relative', transition: 'all 200ms' }}
               onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = R; el.style.background = SRF }}
               onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = RD; el.style.background = 'transparent' }}
@@ -918,7 +751,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ══════════ FOOTER BAR ══════════ */}
+        {/* ══════════ FOOTER ══════════ */}
         <footer style={{ borderTop: '1px solid #1a1a1a', padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 2, height: 20, background: R }} />
@@ -933,11 +766,11 @@ export default function LandingPage() {
           <div style={{ display: 'flex', gap: 20, fontSize: 9, color: '#4a4a4a', letterSpacing: '0.15em' }}>
             {[
               { icon: GitBranch,    label: 'GITHUB' },
-              { icon: ExternalLink, label: 'DOCS' },
-              { icon: Layers,       label: 'API' },
-              { icon: Terminal,     label: 'CLI' },
+              { icon: ExternalLink, label: 'DOCS'   },
+              { icon: Layers,       label: 'API'    },
+              { icon: Terminal,     label: 'CLI'    },
             ].map(({ icon: Icon, label }) => (
-              <a key={label} href="#" style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#4a4a4a', textDecoration: 'none', transition: 'color 150ms', cursor: 'pointer' }}
+              <a key={label} href="#" style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#4a4a4a', textDecoration: 'none', transition: 'color 150ms' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = R }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#4a4a4a' }}
               >

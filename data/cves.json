@@ -1,12 +1,47 @@
-[
-  { "cve": "CVE-2026-20127", "cvss": 10, "title": "Cisco Catalyst SD-WAN Controller and Manager Authentication Bypass" },
-  { "cve": "CVE-2026-22769", "cvss": 10, "title": "Dell RecoverPoint Hard-coded Credentials" },
-  { "cve": "CVE-2025-52691", "cvss": 10, "title": "SmarterTools SmarterMail Unrestricted Upload of Dangerous File" },
-  { "cve": "CVE-2025-37164", "cvss": 10, "title": "HPE OneView Code Injection" },
-  { "cve": "CVE-2025-20393", "cvss": 10, "title": "Cisco Multiple Products Improper Input Validation" },
-  { "cve": "CVE-2025-55182", "cvss": 10, "title": "Meta React Server Components Remote Code Execution" },
-  { "cve": "CVE-2025-54253", "cvss": 10, "title": "Adobe Experience Manager Forms Code Execution" },
-  { "cve": "CVE-2025-10035", "cvss": 10, "title": "Fortra GoAnywhere MFT Deserialization of Untrusted Data" },
-  { "cve": "CVE-2025-43300", "cvss": 10, "title": "Apple iOS/iPadOS/macOS Out-of-Bounds Write" },
-  { "cve": "CVE-2025-20281", "cvss": 10, "title": "Cisco Identity Services Engine Injection" }
-]
+{
+  "total_cves": 570,
+  "highest_epss": [
+    { "cve": "CVE-2024-3400",  "severity": "CRITICAL", "exploit_probability": "0.99" },
+    { "cve": "CVE-2024-4577",  "severity": "CRITICAL", "exploit_probability": "0.99" },
+    { "cve": "CVE-2024-55591", "severity": "CRITICAL", "exploit_probability": "0.99" },
+    { "cve": "CVE-2024-50603", "severity": "CRITICAL", "exploit_probability": "0.97" },
+    { "cve": "CVE-2025-0282",  "severity": "HIGH",     "exploit_probability": "0.98" },
+    { "cve": "CVE-2025-20393", "severity": "CRITICAL", "exploit_probability": "0.95" },
+    { "cve": "CVE-2025-37164", "severity": "CRITICAL", "exploit_probability": "0.96" }
+  ],
+  "attack_vectors": [
+    { "label": "Network",   "value": 312 },
+    { "label": "Adjacent",  "value": 87  },
+    { "label": "Local",     "value": 124 },
+    { "label": "Physical",  "value": 47  }
+  ],
+  "known_exploited": [
+    { "cve": "CVE-2026-20127", "cvss": 10, "title": "Cisco Catalyst SD-WAN Authentication Bypass" },
+    { "cve": "CVE-2025-37164", "cvss": 10, "title": "HPE OneView Code Injection" },
+    { "cve": "CVE-2025-20393", "cvss": 10, "title": "Cisco Multiple Products Improper Input Validation" },
+    { "cve": "CVE-2025-10035", "cvss": 10, "title": "Fortra GoAnywhere MFT Deserialization" },
+    { "cve": "CVE-2025-20281", "cvss": 10, "title": "Cisco Identity Services Engine Injection" },
+    { "cve": "CVE-2024-3400",  "cvss": 10, "title": "Palo Alto PAN-OS Command Injection" },
+    { "cve": "CVE-2024-55591", "cvss": 9.8, "title": "Fortinet FortiOS Authentication Bypass" },
+    { "cve": "CVE-2024-50603", "cvss": 10, "title": "Aviatrix Controller OS Command Injection" },
+    { "cve": "CVE-2024-4577",  "cvss": 9.8, "title": "PHP CGI Argument Injection" },
+    { "cve": "CVE-2024-1709",  "cvss": 10, "title": "ConnectWise ScreenConnect Authentication Bypass" }
+  ],
+  "targeted_software": [
+    { "product": "Microsoft Windows",    "cpe_code": "cpe:2.3:o:microsoft:windows:*",    "total_vulns": 87 },
+    { "product": "Cisco IOS / IOS XE",  "cpe_code": "cpe:2.3:o:cisco:ios_xe:*",         "total_vulns": 54 },
+    { "product": "Adobe Acrobat",        "cpe_code": "cpe:2.3:a:adobe:acrobat:*",         "total_vulns": 41 },
+    { "product": "Apache HTTP Server",   "cpe_code": "cpe:2.3:a:apache:http_server:*",    "total_vulns": 38 },
+    { "product": "VMware vSphere",       "cpe_code": "cpe:2.3:a:vmware:vsphere:*",        "total_vulns": 29 },
+    { "product": "Fortinet FortiOS",     "cpe_code": "cpe:2.3:o:fortinet:fortios:*",      "total_vulns": 26 },
+    { "product": "Palo Alto PAN-OS",     "cpe_code": "cpe:2.3:o:paloaltonetworks:pan-os:*","total_vulns": 22 },
+    { "product": "Atlassian Confluence", "cpe_code": "cpe:2.3:a:atlassian:confluence:*",  "total_vulns": 17 }
+  ],
+  "url_fixes": [
+    { "cve": "CVE-2024-3400",  "type": "Vendor Advisory", "fix_url": "https://security.paloaltonetworks.com/CVE-2024-3400" },
+    { "cve": "CVE-2024-4577",  "type": "Patch",           "fix_url": "https://www.php.net/ChangeLog-8.php" },
+    { "cve": "CVE-2024-55591", "type": "Vendor Advisory", "fix_url": "https://www.fortiguard.com/psirt/FG-IR-24-535" },
+    { "cve": "CVE-2025-0282",  "type": "Patch",           "fix_url": "https://forums.ivanti.com/s/article/CVE-2025-0282" },
+    { "cve": "CVE-2025-37164", "type": "Vendor Advisory", "fix_url": "https://www.hpe.com/h20195/v2/GetPDF.aspx/dn9581" }
+  ]
+}

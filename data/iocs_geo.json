@@ -1,12 +1,56 @@
-[
-  { "label": "United States",  "value": 7391 },
-  { "label": "China",          "value": 4896 },
-  { "label": "Germany",        "value": 987  },
-  { "label": "Singapore",      "value": 905  },
-  { "label": "United Kingdom", "value": 784  },
-  { "label": "Brazil",         "value": 771  },
-  { "label": "India",          "value": 558  },
-  { "label": "France",         "value": 551  },
-  { "label": "Japan",          "value": 526  },
-  { "label": "Portugal",       "value": 488  }
-]
+{
+  "total_iocs": 326511,
+  "campaigns_total": 101,
+  "total_asn": 4872,
+  "total_ips": 48144,
+  "total_countries": 112,
+  "attack_vectors_total": 40,
+  "country_origin": [
+    { "label": "United States",  "value": 7391 },
+    { "label": "China",          "value": 4896 },
+    { "label": "Germany",        "value": 987  },
+    { "label": "Singapore",      "value": 905  },
+    { "label": "United Kingdom", "value": 784  },
+    { "label": "Brazil",         "value": 771  },
+    { "label": "India",          "value": 558  },
+    { "label": "France",         "value": 551  },
+    { "label": "Japan",          "value": 526  },
+    { "label": "Portugal",       "value": 488  }
+  ],
+  "ioc_types": [
+    { "label": "IPv4 Address",  "value": 48144  },
+    { "label": "URL",           "value": 594298 },
+    { "label": "Domain",        "value": 3045   },
+    { "label": "File Hash",     "value": 1072   },
+    { "label": "Crypto Wallet", "value": 2784   },
+    { "label": "Email",         "value": 987    }
+  ],
+  "ioc_hosting": [
+    { "label": "Alibaba US Technology",  "value": 2079 },
+    { "label": "Google LLC",             "value": 1878 },
+    { "label": "Chinanet",               "value": 1691 },
+    { "label": "Microsoft Corporation",  "value": 1666 },
+    { "label": "CHINA UNICOM China169",  "value": 1383 },
+    { "label": "DigitalOcean, LLC",      "value": 1117 },
+    { "label": "ONYPHE SAS",             "value": 753  },
+    { "label": "Akamai Connected Cloud", "value": 444  },
+    { "label": "Amazon.com, Inc.",       "value": 380  }
+  ],
+  "asn_types": [
+    { "label": "Cloud Provider",  "value": 18432 },
+    { "label": "ISP / Telecom",   "value": 14287 },
+    { "label": "Hosting Company", "value": 9841  },
+    { "label": "Data Center",     "value": 6123  },
+    { "label": "Education",       "value": 1872  },
+    { "label": "Government",      "value": 643   }
+  ],
+  "top_ips": [
+    { "ip_address": "34.62.196.33",    "connection_count": 172 },
+    { "ip_address": "45.15.226.44",    "connection_count": 168 },
+    { "ip_address": "27.79.41.136",    "connection_count": 137 },
+    { "ip_address": "36.253.9.69",     "connection_count": 91  },
+    { "ip_address": "193.42.11.108",   "connection_count": 88  },
+    { "ip_address": "46.101.94.59",    "connection_count": 69  },
+    { "ip_address": "77.83.39.211",    "connection_count": 44  }
+  ]
+}

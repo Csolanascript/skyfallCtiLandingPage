@@ -1,0 +1,110 @@
+.shell {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(232, 84, 25, 0.35);
+  border-radius: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(232, 84, 25, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(232, 84, 25, 0.05), transparent 40%),
+    #000000;
+}
+
+.canvasWrap {
+  position: relative;
+  width: 100%;
+  min-height: 420px;
+}
+
+.overlay {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  z-index: 4;
+  display: grid;
+  gap: 0.45rem;
+  max-width: min(88%, 420px);
+  pointer-events: none;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  border: 1px solid rgba(232, 84, 25, 0.45);
+  background: rgba(0, 0, 0, 0.82);
+  border-radius: 0;
+  color: #D4D4D4;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+.coords {
+  border: 1px solid rgba(232, 84, 25, 0.25);
+  background: rgba(0, 0, 0, 0.82);
+  border-radius: 0;
+  padding: 0.46rem 0.62rem;
+  color: #D4D4D4;
+  font-size: 0.68rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+.coords p {
+  margin: 0;
+  line-height: 1.36;
+}
+
+.legend {
+  border-top: 1px solid rgba(232, 84, 25, 0.2);
+  margin-top: 0.5rem;
+  padding-top: 0.46rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.36rem;
+}
+
+.legendChip {
+  border: 1px solid rgba(232, 84, 25, 0.3);
+  border-radius: 0;
+  background: rgba(0, 0, 0, 0.75);
+  color: rgba(212, 212, 212, 0.7);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.14rem 0.44rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+.empty {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: rgba(212, 212, 212, 0.5);
+  padding: 1.2rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+.empty p {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 780px) {
+  .canvasWrap {
+    min-height: 390px;
+  }
+
+  .overlay {
+    max-width: 94%;
+  }
+}

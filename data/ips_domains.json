@@ -1,12 +1,50 @@
-[
-  { "label": "Alibaba US Technology",  "value": 2079 },
-  { "label": "Google LLC",             "value": 1878 },
-  { "label": "Chinanet",              "value": 1691 },
-  { "label": "Microsoft Corporation", "value": 1666 },
-  { "label": "CHINA UNICOM China169", "value": 1383 },
-  { "label": "UCLOUD HK LIMITED",     "value": 1129 },
-  { "label": "DigitalOcean, LLC",     "value": 1117 },
-  { "label": "ONYPHE SAS",            "value": 753  },
-  { "label": "Akamai Connected Cloud", "value": 444 },
-  { "label": "Amazon.com, Inc.",      "value": 380  }
-]
+{
+  "last_domains": [
+    { "domain_name": "update-checker.ru",         "last_seen": "2026-05-28T08:01Z" },
+    { "domain_name": "cdn-delivery-net.com",      "last_seen": "2026-05-28T07:44Z" },
+    { "domain_name": "secure-login-verify.info",  "last_seen": "2026-05-28T07:22Z" },
+    { "domain_name": "malware-dist.xyz",          "last_seen": "2026-05-28T06:58Z" },
+    { "domain_name": "botnet-c2-ctrl.cc",         "last_seen": "2026-05-28T06:34Z" },
+    { "domain_name": "phish-target-drop.net",     "last_seen": "2026-05-28T05:12Z" },
+    { "domain_name": "exfil-receiver.pro",        "last_seen": "2026-05-28T04:49Z" },
+    { "domain_name": "ransomware-host.onion.to",  "last_seen": "2026-05-28T03:21Z" }
+  ],
+  "top_tlds": [
+    { "label": ".com",  "value": 1241 },
+    { "label": ".ru",   "value": 487  },
+    { "label": ".net",  "value": 321  },
+    { "label": ".xyz",  "value": 298  },
+    { "label": ".info", "value": 187  },
+    { "label": ".cc",   "value": 143  },
+    { "label": ".pro",  "value": 98   },
+    { "label": ".io",   "value": 76   }
+  ],
+  "domain_ip": [
+    { "domain": "update-checker.ru",        "resolved_ip": "34.62.196.33"    },
+    { "domain": "cdn-delivery-net.com",     "resolved_ip": "45.15.226.44"    },
+    { "domain": "secure-login-verify.info", "resolved_ip": "27.79.41.136"    },
+    { "domain": "botnet-c2-ctrl.cc",        "resolved_ip": "193.42.11.108"   },
+    { "domain": "exfil-receiver.pro",       "resolved_ip": "77.83.39.211"    },
+    { "domain": "malware-dist.xyz",         "resolved_ip": "159.203.120.106" }
+  ],
+  "dns_flags": {
+    "cloudflare_flags": 412,
+    "dns4eu_flags":     298,
+    "ultradns_flags":   187,
+    "total_analyzed":   3045
+  },
+  "indicator_types": [
+    { "label": "malicious-activity",  "value": 289430 },
+    { "label": "brute-force",         "value": 198712 },
+    { "label": "unauthorized-access", "value": 87433  },
+    { "label": "social-engineering",  "value": 54219  },
+    { "label": "spam",                "value": 38764  },
+    { "label": "compromised",         "value": 21983  }
+  ],
+  "indicator_malware": [
+    { "indicator": "34.62.196.33",    "connection_count": 4, "malware_families": "Cobalt Strike, Emotet"         },
+    { "indicator": "36.253.9.69",     "connection_count": 3, "malware_families": "TrickBot, IcedID, Dridex"      },
+    { "indicator": "45.15.226.44",    "connection_count": 3, "malware_families": "AsyncRAT, NanoCore, Agent Tesla"},
+    { "indicator": "193.42.11.108",   "connection_count": 2, "malware_families": "Empire, PowerSploit"           }
+  ]
+}

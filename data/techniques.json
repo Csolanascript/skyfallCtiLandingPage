@@ -1,17 +1,47 @@
-[
-  { "mitre_id": "T1059.001", "name": "PowerShell",                      "tactic": "Execution",        "actor_count": 62, "malware_count": 28 },
-  { "mitre_id": "T1078",     "name": "Valid Accounts",                  "tactic": "Initial Access",   "actor_count": 54, "malware_count": 19 },
-  { "mitre_id": "T1566.001", "name": "Spearphishing Attachment",        "tactic": "Initial Access",   "actor_count": 51, "malware_count": 33 },
-  { "mitre_id": "T1486",     "name": "Data Encrypted for Impact",       "tactic": "Impact",           "actor_count": 38, "malware_count": 44 },
-  { "mitre_id": "T1055",     "name": "Process Injection",               "tactic": "Defense Evasion", "actor_count": 47, "malware_count": 56 },
-  { "mitre_id": "T1021.001", "name": "Remote Desktop Protocol",         "tactic": "Lateral Movement", "actor_count": 35, "malware_count": 12 },
-  { "mitre_id": "T1003.001", "name": "LSASS Memory",                    "tactic": "Credential Access","actor_count": 41, "malware_count": 22 },
-  { "mitre_id": "T1562.001", "name": "Disable or Modify Tools",         "tactic": "Defense Evasion", "actor_count": 37, "malware_count": 31 },
-  { "mitre_id": "T1190",     "name": "Exploit Public-Facing Application","tactic": "Initial Access",  "actor_count": 44, "malware_count": 8  },
-  { "mitre_id": "T1041",     "name": "Exfiltration Over C2 Channel",   "tactic": "Exfiltration",     "actor_count": 36, "malware_count": 29 },
-  { "mitre_id": "T1047",     "name": "Windows Management Instrumentation","tactic": "Execution",      "actor_count": 29, "malware_count": 18 },
-  { "mitre_id": "T1070.001", "name": "Clear Windows Event Logs",        "tactic": "Defense Evasion", "actor_count": 28, "malware_count": 15 },
-  { "mitre_id": "T1082",     "name": "System Information Discovery",    "tactic": "Discovery",        "actor_count": 56, "malware_count": 41 },
-  { "mitre_id": "T1027",     "name": "Obfuscated Files or Information", "tactic": "Defense Evasion", "actor_count": 49, "malware_count": 52 },
-  { "mitre_id": "T1105",     "name": "Ingress Tool Transfer",           "tactic": "Command and Control","actor_count": 43, "malware_count": 38 }
-]
+{
+  "targeted_os": [
+    { "label": "Windows",          "value": 553 },
+    { "label": "Linux",            "value": 287 },
+    { "label": "macOS",            "value": 198 },
+    { "label": "Android",          "value": 82  },
+    { "label": "Network Devices",  "value": 63  },
+    { "label": "Cloud",            "value": 41  },
+    { "label": "iOS",              "value": 22  }
+  ],
+  "biggest_groups": [
+    { "threat_actor": "APT29",         "malware_tools": "CozyCar, SUNBURST, MiniDuke, Cobalt Strike, Empire", "tool_count": 34 },
+    { "threat_actor": "APT28",         "malware_tools": "X-Agent, Mimikatz, Empire, LoJax, SOURFACE",         "tool_count": 28 },
+    { "threat_actor": "Lazarus Group", "malware_tools": "BLINDINGCAN, HOPLIGHT, Duuzer, ECCENTRICBANDWAGON",  "tool_count": 24 },
+    { "threat_actor": "APT41",         "malware_tools": "MESSAGETAP, Cobalt Strike, Mimikatz, KeyPlug",       "tool_count": 21 },
+    { "threat_actor": "Sandworm Team", "malware_tools": "NotPetya, BlackEnergy, Industroyer, Cyclops Blink",  "tool_count": 19 },
+    { "threat_actor": "OilRig",        "malware_tools": "RDAT, Helminth, ISMAgent, POWERTON",                  "tool_count": 16 }
+  ],
+  "most_used_techniques": [
+    { "technique_name": "PowerShell (T1059.001)",                  "actor_count": 62 },
+    { "technique_name": "System Information Discovery (T1082)",    "actor_count": 56 },
+    { "technique_name": "Valid Accounts (T1078)",                  "actor_count": 54 },
+    { "technique_name": "Spearphishing Attachment (T1566.001)",    "actor_count": 51 },
+    { "technique_name": "Obfuscated Files (T1027)",               "actor_count": 49 },
+    { "technique_name": "Process Injection (T1055)",               "actor_count": 47 },
+    { "technique_name": "Exploit Public Application (T1190)",      "actor_count": 44 },
+    { "technique_name": "OS Credential Dumping (T1003)",           "actor_count": 43 },
+    { "technique_name": "Ingress Tool Transfer (T1105)",           "actor_count": 43 },
+    { "technique_name": "Windows Command Shell (T1059.003)",       "actor_count": 45 }
+  ],
+  "mitigations": [
+    { "mitigation": "Privileged Account Management",      "techniques_covered": 28 },
+    { "mitigation": "Multi-factor Authentication",        "techniques_covered": 24 },
+    { "mitigation": "Application Developer Guidance",     "techniques_covered": 21 },
+    { "mitigation": "Restrict Web-Based Content",         "techniques_covered": 18 },
+    { "mitigation": "Code Signing",                       "techniques_covered": 15 },
+    { "mitigation": "Network Segmentation",               "techniques_covered": 14 },
+    { "mitigation": "Antivirus / Antimalware",            "techniques_covered": 12 }
+  ],
+  "unmitigated": [
+    { "technique": "Network Sniffing",              "technique_id": "T1040"     },
+    { "technique": "Clipboard Data",                "technique_id": "T1115"     },
+    { "technique": "Screen Capture",                "technique_id": "T1113"     },
+    { "technique": "System Shutdown/Reboot",        "technique_id": "T1529"     },
+    { "technique": "Disk Wipe",                     "technique_id": "T1561"     }
+  ]
+}

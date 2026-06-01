@@ -1,12 +1,23 @@
-[
-  { "label": "malicious-activity",   "value": 289430 },
-  { "label": "brute-force",          "value": 198712 },
-  { "label": "unauthorized-access",  "value": 87433  },
-  { "label": "social-engineering",   "value": 54219  },
-  { "label": "network-traffic",      "value": 43108  },
-  { "label": "spam",                 "value": 38764  },
-  { "label": "compromised",          "value": 21983  },
-  { "label": "anonymization",        "value": 12540  },
-  { "label": "cryptomining",         "value": 8832   },
-  { "label": "phishing",             "value": 6471   }
-]
+{
+  "last_analyzed": [
+    { "ip_address": "34.62.196.33",    "asn": "AS15169",  "country": "US", "last_updated": "2026-05-28T08:14Z" },
+    { "ip_address": "36.253.9.69",     "asn": "AS4134",   "country": "CN", "last_updated": "2026-05-28T07:52Z" },
+    { "ip_address": "104.199.19.60",   "asn": "AS15169",  "country": "US", "last_updated": "2026-05-28T07:41Z" },
+    { "ip_address": "45.15.226.44",    "asn": "AS209782", "country": "NL", "last_updated": "2026-05-28T07:30Z" },
+    { "ip_address": "27.79.41.136",    "asn": "AS45899",  "country": "VN", "last_updated": "2026-05-28T06:58Z" },
+    { "ip_address": "77.83.39.211",    "asn": "AS197695", "country": "RU", "last_updated": "2026-05-28T06:22Z" },
+    { "ip_address": "193.42.11.108",   "asn": "AS204955", "country": "RU", "last_updated": "2026-05-28T05:48Z" },
+    { "ip_address": "159.203.120.106", "asn": "AS14061",  "country": "CA", "last_updated": "2026-05-28T05:31Z" },
+    { "ip_address": "154.86.0.33",     "asn": "AS4134",   "country": "CN", "last_updated": "2026-05-28T04:12Z" },
+    { "ip_address": "46.101.94.59",    "asn": "AS14061",  "country": "DE", "last_updated": "2026-05-28T03:44Z" }
+  ],
+  "correlated_ips": [
+    { "ip": "34.62.196.33",    "asn": "AS15169",  "country": "US", "attack_pattern": "T1110 · Brute Force" },
+    { "ip": "36.253.9.69",     "asn": "AS4134",   "country": "CN", "attack_pattern": "T1566 · Phishing" },
+    { "ip": "45.15.226.44",    "asn": "AS209782", "country": "NL", "attack_pattern": "T1059 · Command Execution" },
+    { "ip": "27.79.41.136",    "asn": "AS45899",  "country": "VN", "attack_pattern": "T1078 · Valid Accounts" },
+    { "ip": "77.83.39.211",    "asn": "AS197695", "country": "RU", "attack_pattern": "T1071 · C2 Protocol" },
+    { "ip": "193.42.11.108",   "asn": "AS204955", "country": "RU", "attack_pattern": "T1055 · Process Injection" },
+    { "ip": "104.199.19.60",   "asn": "AS15169",  "country": "US", "attack_pattern": "T1190 · Exploit Public App" }
+  ]
+}
