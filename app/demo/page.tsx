@@ -421,8 +421,203 @@ export default function DemoPage() {
     exportPdfReport()
   }
 
+  const [showGlobe, setShowGlobe] = useState(false)
+
+  /* Clickable observable chip */
+  const ObsChip = ({ mono = true }: { mono?: boolean }) => (
+    <button
+      type="button"
+      onClick={() => setShowGlobe(true)}
+      title="Click to view 3D geolocation map"
+      style={{
+        background: 'none', border: `1px solid rgba(232,84,25,0.4)`,
+        color: 'var(--hud-red)', cursor: 'pointer', padding: '1px 8px',
+        fontFamily: mono ? 'var(--hud-mono)' : 'inherit',
+        fontSize: 'inherit', fontWeight: 700, letterSpacing: mono ? '0.05em' : 'inherit',
+        transition: 'all 150ms', display: 'inline-flex', alignItems: 'center', gap: 5,
+        verticalAlign: 'middle',
+      }}
+      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(232,84,25,0.12)'; el.style.borderColor = 'var(--hud-red)' }}
+      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'none'; el.style.borderColor = 'rgba(232,84,25,0.4)' }}
+    >
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--hud-red)', boxShadow: '0 0 6px var(--hud-red)', flexShrink: 0, animation: 'demo-flicker 2.5s infinite' }} />
+      {OBS}
+    </button>
+  )
+
   return (
     <div className={`${styles.shell}${isDark ? '' : ` ${styles.light}`}`}>
+
+      {/* ── 3D Globe Modal ──────────────────────────────────── */}
+      {showGlobe && (
+        <div
+          role="dialog"
+          aria-modal
+          aria-label="IOC 3D Geolocation Map"
+          onClick={e => { if (e.target === e.currentTarget) setShowGlobe(false) }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9000,
+            background: 'rgba(0,0,0,0.88)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 24,
+            backdropFilter: 'blur(4px)',
+          }}
+        >
+          <div style={{
+            position: 'relative', width: '100%', maxWidth: 1100,
+            border: `1px solid rgba(232,84,25,0.35)`,
+            background: '#020202',
+            display: 'flex', flexDirection: 'column',
+            maxHeight: '90vh', overflow: 'hidden',
+          }}>
+            {/* bracket corners */}
+            {[
+              { top: -1, left: -1, borderTop: '2px solid #E85419', borderLeft: '2px solid #E85419' },
+              { top: -1, right: -1, borderTop: '2px solid #E85419', borderRight: '2px solid #E85419' },
+              { bottom: -1, left: -1, borderBottom: '2px solid #E85419', borderLeft: '2px solid #E85419' },
+              { bottom: -1, right: -1, borderBottom: '2px solid #E85419', borderRight: '2px solid #E85419' },
+            ].map((s, i) => (
+              <div key={i} style={{ position: 'absolute', width: 14, height: 14, ...s }} />
+            ))}
+
+            {/* Modal header */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+              flexShrink: 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <MapPinned size={16} color="#E85419" />
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.22em', color: '#E85419' }}>
+                    IOC EXACT GEOLOCATION MAP
+                  </div>
+                  <div style={{ fontSize: 9, color: 'rgba(212,212,212,0.5)', letterSpacing: '0.14em', marginTop: 2 }}>
+                    {OBS} · {COUNTRY} · {ISP} · AS{ASN}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ display: 'flex', gap: 10, fontSize: 9, letterSpacing: '0.12em' }}>
+                  {[
+                    { dot: '#E85419', label: 'IOC SOURCE' },
+                    { dot: '#22d3ee', label: 'TARGET COUNTRIES' },
+                    { dot: 'rgba(232,84,25,0.5)', label: 'ATTACK VECTORS' },
+                  ].map(({ dot, label }) => (
+                    <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(212,212,212,0.45)' }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, flexShrink: 0 }} />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setShowGlobe(false)}
+                  aria-label="Close"
+                  style={{
+                    background: 'none', border: '1px solid rgba(255,255,255,0.12)',
+                    color: 'rgba(212,212,212,0.6)', cursor: 'pointer',
+                    padding: '4px 10px', fontSize: 10, letterSpacing: '0.18em',
+                    fontFamily: 'var(--hud-mono)', transition: 'all 150ms',
+                    display: 'flex', alignItems: 'center', gap: 5,
+                  }}
+                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#E85419'; el.style.color = '#E85419' }}
+                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(255,255,255,0.12)'; el.style.color = 'rgba(212,212,212,0.6)' }}
+                >
+                  ✕ CLOSE
+                </button>
+              </div>
+            </div>
+
+            {/* Globe + sidebar */}
+            <div style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
+
+              {/* Globe takes most of the space */}
+              <div style={{ flex: 1, minHeight: 480 }}>
+                <IOCGlobeMap
+                  observable={OBS}
+                  sourceLatitude={LAT}
+                  sourceLongitude={LNG}
+                  sourceCountry={COUNTRY}
+                  targets={TARGETS}
+                />
+              </div>
+
+              {/* Sidebar: source + targets */}
+              <div style={{
+                width: 220, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,0.06)',
+                padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: 16,
+                overflowY: 'auto', background: '#030303',
+              }}>
+                {/* Source info */}
+                <div>
+                  <div style={{ fontSize: 8, color: '#E85419', letterSpacing: '0.2em', fontWeight: 700, marginBottom: 10 }}>
+                    ▶ IOC SOURCE
+                  </div>
+                  {[
+                    ['Observable', OBS],
+                    ['Country', `${COUNTRY} · ${CITY}`],
+                    ['Coordinates', `${LAT}, ${LNG}`],
+                    ['ISP', ISP],
+                    ['ASN', `AS${ASN}`],
+                    ['Network', NETWORK],
+                    ['Risk Score', `${RISK_SCORE}/100 HIGH`],
+                  ].map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', flexDirection: 'column', marginBottom: 7, paddingBottom: 7, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <span style={{ fontSize: 8, color: 'rgba(212,212,212,0.4)', letterSpacing: '0.1em' }}>{k}</span>
+                      <span style={{ fontSize: 10, color: k === 'Risk Score' ? '#E85419' : 'rgba(212,212,212,0.85)', fontWeight: k === 'Observable' ? 700 : 400, marginTop: 1 }}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Target distribution */}
+                <div>
+                  <div style={{ fontSize: 8, color: '#22d3ee', letterSpacing: '0.2em', fontWeight: 700, marginBottom: 10 }}>
+                    ▶ TARGET DISTRIBUTION
+                  </div>
+                  {TARGETS.map(t => (
+                    <div key={t.country} style={{ marginBottom: 8 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, marginBottom: 3 }}>
+                        <span style={{ color: '#22d3ee', fontWeight: 700 }}>{t.country}</span>
+                        <span style={{ color: 'rgba(212,212,212,0.5)' }}>{t.value} · {t.percent.toFixed(0)}%</span>
+                      </div>
+                      <div style={{ height: 3, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${t.percent}%`, background: '#22d3ee', boxShadow: '0 0 6px #22d3ee', transition: 'width 0.6s ease' }} />
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{ marginTop: 10, fontSize: 8, color: 'rgba(212,212,212,0.35)', letterSpacing: '0.1em' }}>
+                    {TARGETS.length} countries targeted · {TARGETS.reduce((a, t) => a + t.value, 0)} total reports
+                  </div>
+                </div>
+
+                {/* Behaviors */}
+                <div>
+                  <div style={{ fontSize: 8, color: 'rgba(232,84,25,0.7)', letterSpacing: '0.2em', fontWeight: 700, marginBottom: 8 }}>
+                    ▶ ATTACK BEHAVIORS
+                  </div>
+                  {BEHAVIORS.map(b => (
+                    <span key={b} style={{ display: 'block', fontSize: 9, padding: '3px 8px', border: '1px solid rgba(232,84,25,0.3)', color: 'rgba(232,84,25,0.8)', marginBottom: 4, letterSpacing: '0.08em' }}>{b}</span>
+                  ))}
+                  {ABUSE_CATS.slice(0, 4).map(c => (
+                    <span key={c.name} style={{ display: 'block', fontSize: 9, padding: '3px 8px', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(212,212,212,0.5)', marginBottom: 4, letterSpacing: '0.08em' }}>{c.name} ({c.count})</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal footer */}
+            <div style={{
+              padding: '8px 20px', borderTop: '1px solid rgba(255,255,255,0.06)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              fontSize: 8, color: 'rgba(212,212,212,0.3)', letterSpacing: '0.12em', flexShrink: 0,
+            }}>
+              <span>INDICATOR: {INDICATOR_ID}</span>
+              <span>STIX 2.1 · TLP:{TLP} · DEMO DATA</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={styles.inner}>
 
         {/* Header */}
@@ -551,7 +746,7 @@ export default function DemoPage() {
                 <article className={styles.contextCard}>
                   <h3 className={styles.sectionTitle}><Activity size={12} /> Threat and Context</h3>
                   <div className={styles.contextList}>
-                    <p>Observable: <span className="font-mono">{OBS}</span></p>
+                    <p>Observable: <ObsChip /></p>
                     <p>TLP: <strong>{TLP}</strong></p>
                     <p>Mode: <strong>IP</strong></p>
                     <p>Country: <strong>{COUNTRY}</strong></p>
@@ -565,19 +760,66 @@ export default function DemoPage() {
                 </article>
               </div>
 
-              {/* Globe */}
+              {/* Globe — click observable to open 3D map */}
               <section data-anim="detail" className={styles.globeShowcase}>
                 <div className={styles.investigationHeader}>
                   <h3 className={styles.sectionTitle}><MapPinned size={12} /> IOC Exact Geolocation Map</h3>
                   <span className={styles.sectionMuted}>Transparent animated globe with outbound attack paths</span>
                 </div>
-                <IOCGlobeMap
-                  observable={OBS}
-                  sourceLatitude={LAT}
-                  sourceLongitude={LNG}
-                  sourceCountry={COUNTRY}
-                  targets={TARGETS}
-                />
+                <button
+                  type="button"
+                  onClick={() => setShowGlobe(true)}
+                  style={{
+                    width: '100%', border: 'none', background: 'none',
+                    cursor: 'pointer', padding: 0, display: 'block', position: 'relative',
+                  }}
+                  aria-label="Open 3D geolocation globe"
+                >
+                  {/* Static preview of targets */}
+                  <div style={{
+                    width: '100%', height: 220,
+                    background: 'radial-gradient(ellipse at 60% 50%, rgba(34,211,238,0.06) 0%, rgba(0,0,0,0) 70%), #030303',
+                    border: '1px solid rgba(34,211,238,0.12)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden',
+                  }}>
+                    {/* Animated ring */}
+                    <div style={{
+                      width: 120, height: 120, borderRadius: '50%',
+                      border: '1px solid rgba(34,211,238,0.2)',
+                      boxShadow: '0 0 40px rgba(34,211,238,0.08), inset 0 0 40px rgba(34,211,238,0.04)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      position: 'relative',
+                    }}>
+                      <div style={{
+                        width: 90, height: 90, borderRadius: '50%',
+                        border: '1px solid rgba(232,84,25,0.3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <div style={{
+                          width: 8, height: 8, borderRadius: '50%',
+                          background: '#E85419', boxShadow: '0 0 14px #E85419',
+                        }} />
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 10, letterSpacing: '0.22em', color: 'rgba(34,211,238,0.7)', fontFamily: 'var(--hud-mono)' }}>
+                      CLICK TO OPEN 3D GLOBE
+                    </div>
+                    <div style={{ fontSize: 9, color: 'rgba(212,212,212,0.35)', letterSpacing: '0.14em', fontFamily: 'var(--hud-mono)' }}>
+                      {OBS} · {TARGETS.length} target countries · react-globe.gl
+                    </div>
+                    {/* Target dots preview */}
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 300 }}>
+                      {TARGETS.slice(0, 6).map(t => (
+                        <span key={t.country} style={{
+                          fontSize: 8, padding: '2px 7px',
+                          border: '1px solid rgba(34,211,238,0.25)', color: '#22d3ee',
+                          letterSpacing: '0.1em', fontFamily: 'var(--hud-mono)',
+                        }}>{t.country} {t.percent.toFixed(0)}%</span>
+                      ))}
+                    </div>
+                  </div>
+                </button>
               </section>
 
               {/* Investigation report */}
@@ -590,7 +832,7 @@ export default function DemoPage() {
                   <article data-anim="report-block" className={styles.reportCard}>
                     <h4 className={styles.reportTitle}><ShieldCheck size={14} /> Operational Verdict</h4>
                     <p className={styles.reportLead}>
-                      HIGH risk posture with score {RISK_SCORE}/100 for IOC<span className="font-mono"> {OBS}</span>.
+                      HIGH risk posture with score {RISK_SCORE}/100 for IOC <ObsChip />.
                     </p>
                     <div className={styles.reportMetrics}>
                       <span>Abuse score: <strong>{ABUSE_SCORE}</strong></span>
