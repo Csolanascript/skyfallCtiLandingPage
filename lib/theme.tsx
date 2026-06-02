@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 
 export type ColorSet = {
   bg: string; red: string; redDim: string; redGlow: string;
@@ -95,3 +95,38 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useTheme = () => useContext(ThemeCtx);
+
+export function ThemeCurtain() {
+  const { curtainPhase, curtainColor } = useTheme();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (curtainPhase === "falling") {
+      el.style.transition = "none";
+      el.style.transform = "translateY(100%)";
+      void el.offsetHeight; // force reflow so starting position is applied
+      el.style.transition = `transform ${CURTAIN_DURATION}ms ${CURTAIN_EASING}`;
+      el.style.transform = "translateY(0%)";
+    } else if (curtainPhase === "rising") {
+      el.style.transition = `transform ${CURTAIN_DURATION}ms ${CURTAIN_EASING}`;
+      el.style.transform = "translateY(-100%)";
+    }
+  }, [curtainPhase]);
+
+  if (curtainPhase === "idle") return null;
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        position: "fixed", inset: 0, zIndex: 99999,
+        background: curtainColor,
+        transform: "translateY(100%)",
+        pointerEvents: "none",
+        willChange: "transform",
+      }}
+    />
+  );
+}

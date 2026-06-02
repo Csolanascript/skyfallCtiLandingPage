@@ -3,10 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { gsap } from 'gsap'
 import { ParticleCanvas } from '@/components/ui/aether-flow-hero'
-import { Shield, BarChart3, ScanSearch, ArrowRight, ChevronLeft, Cpu } from 'lucide-react'
-
-const R    = '#E85419'
-const MONO = "'JetBrains Mono','Share Tech Mono',monospace"
+import { Shield, BarChart3, ScanSearch, ArrowRight, ChevronLeft, Cpu, Sun, Moon } from 'lucide-react'
+import { useTheme } from '@/lib/theme'
 
 const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
@@ -36,14 +34,15 @@ const STYLES = `
 .lp-flicker { animation: lp-flicker 7s infinite; }
 `
 
-function Brackets({ color = R, size = 10 }: { color?: string; size?: number }) {
+function Brackets({ color, size = 10 }: { color?: string; size?: number }) {
   const s: React.CSSProperties = { position: 'absolute', width: size, height: size }
+  const c = color ?? '#E85419'
   return (
     <>
-      <div style={{ ...s, top: -1, left:  -1, borderTop:    `2px solid ${color}`, borderLeft:  `2px solid ${color}` }} />
-      <div style={{ ...s, top: -1, right: -1, borderTop:    `2px solid ${color}`, borderRight: `2px solid ${color}` }} />
-      <div style={{ ...s, bottom: -1, left:  -1, borderBottom: `2px solid ${color}`, borderLeft:  `2px solid ${color}` }} />
-      <div style={{ ...s, bottom: -1, right: -1, borderBottom: `2px solid ${color}`, borderRight: `2px solid ${color}` }} />
+      <div style={{ ...s, top: -1, left:  -1, borderTop:    `2px solid ${c}`, borderLeft:  `2px solid ${c}` }} />
+      <div style={{ ...s, top: -1, right: -1, borderTop:    `2px solid ${c}`, borderRight: `2px solid ${c}` }} />
+      <div style={{ ...s, bottom: -1, left:  -1, borderBottom: `2px solid ${c}`, borderLeft:  `2px solid ${c}` }} />
+      <div style={{ ...s, bottom: -1, right: -1, borderBottom: `2px solid ${c}`, borderRight: `2px solid ${c}` }} />
     </>
   )
 }
@@ -85,6 +84,9 @@ const OPTIONS = [
 ]
 
 export default function EnterPage() {
+  const { C, isDark, toggle } = useTheme()
+  const MONO = C.mono
+
   const card0   = useRef<HTMLDivElement>(null)
   const card1   = useRef<HTMLDivElement>(null)
   const card2   = useRef<HTMLDivElement>(null)
@@ -98,35 +100,50 @@ export default function EnterPage() {
     return () => { tl.kill() }
   }, [])
 
+  const txtPrimary   = isDark ? '#E2E2E2' : '#1A1A1A'
+  const txtMuted     = isDark ? 'rgba(212,212,212,0.35)' : 'rgba(26,26,26,0.40)'
+  const txtBody      = isDark ? 'rgba(226,226,226,0.38)' : 'rgba(30,30,30,0.55)'
+  const txtBodyHov   = isDark ? 'rgba(226,226,226,0.68)' : 'rgba(30,30,30,0.85)'
+  const cardBg       = isDark ? 'rgba(10,10,10,0.88)'   : 'rgba(245,245,240,0.94)'
+  const cardBgHov    = (color: string) => isDark ? `${color}12` : `${color}0e`
+  const dimStats     = isDark ? 'rgba(212,212,212,0.2)' : 'rgba(30,30,30,0.25)'
+  const titleHov     = isDark ? '#fff' : '#0A0A0A'
+
   return (
-    <div style={{ minHeight: '100vh', background: '#000', fontFamily: MONO, position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: MONO, position: 'relative', overflow: 'hidden', transition: 'background 300ms' }}>
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
 
-      {/* ── Blurred bg ── */}
+      {/* ── Blurred bg (always dark, atmospheric) ── */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 0,
-        filter: 'blur(7px) brightness(0.28) saturate(1.6)',
+        filter: `blur(7px) brightness(${isDark ? 0.28 : 0.65}) saturate(1.6)`,
         transform: 'scale(1.06)',
+        transition: 'filter 500ms',
       }}>
         <ParticleCanvas />
       </div>
 
-      {/* ── Scanlines ── */}
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none',
-        background: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.09) 3px,rgba(0,0,0,0.09) 4px)',
-      }} />
+      {/* ── Scanlines (dark only) ── */}
+      {isDark && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none',
+          background: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.09) 3px,rgba(0,0,0,0.09) 4px)',
+        }} />
+      )}
 
       {/* ── Vignette ── */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.82) 100%)',
+        background: isDark
+          ? 'radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.82) 100%)'
+          : 'radial-gradient(ellipse at 50% 40%, rgba(240,239,232,0.3) 0%, rgba(240,239,232,0.75) 100%)',
+        transition: 'background 500ms',
       }} />
 
       {/* ── Dot grid ── */}
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', opacity: 0.035,
-        backgroundImage: 'linear-gradient(#E85419 1px,transparent 1px),linear-gradient(90deg,#E85419 1px,transparent 1px)',
+        position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', opacity: isDark ? 0.035 : 0.025,
+        backgroundImage: `linear-gradient(${C.red} 1px,transparent 1px),linear-gradient(90deg,${C.red} 1px,transparent 1px)`,
         backgroundSize: '48px 48px',
       }} />
 
@@ -142,37 +159,55 @@ export default function EnterPage() {
 
         {/* Header */}
         <div ref={headerR} style={{ textAlign: 'center', marginBottom: 44 }}>
-          <a href="/" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontSize: 9, letterSpacing: '0.22em', color: 'rgba(212,212,212,0.35)',
-            textDecoration: 'none', marginBottom: 24, transition: 'color 150ms',
-          }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = R }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(212,212,212,0.35)' }}
-          >
-            <ChevronLeft size={10} /> BACK TO LANDING
-          </a>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 8 }}>
+            <a href="/" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontSize: 9, letterSpacing: '0.22em', color: txtMuted,
+              textDecoration: 'none', transition: 'color 150ms',
+            }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = C.red }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = txtMuted }}
+            >
+              <ChevronLeft size={10} /> BACK TO LANDING
+            </a>
+            {/* Theme toggle */}
+            <button
+              onClick={toggle}
+              style={{
+                background: 'none', border: `1px solid ${C.redDim}`,
+                color: txtMuted, cursor: 'pointer', padding: '3px 9px',
+                display: 'flex', alignItems: 'center', gap: 5,
+                fontFamily: MONO, fontSize: 9, letterSpacing: '0.12em',
+                transition: 'border-color 150ms, color 150ms', marginLeft: 8,
+              }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = C.red; el.style.color = C.red }}
+              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = C.redDim; el.style.color = txtMuted }}
+            >
+              {isDark ? <Sun size={9} /> : <Moon size={9} />}
+              {isDark ? 'LIGHT' : 'DARK'}
+            </button>
+          </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 22 }}>
-            <div style={{ width: 2, height: 24, background: R, boxShadow: `0 0 10px ${R}` }} />
-            <Shield size={16} color={R} />
-            <span style={{ fontSize: 13, letterSpacing: '0.3em', color: '#E2E2E2' }}>
-              SKYFALL<span style={{ color: R }}>_</span>CTI
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 22, marginTop: 8 }}>
+            <div style={{ width: 2, height: 24, background: C.red, boxShadow: `0 0 10px ${C.red}` }} />
+            <Shield size={16} color={C.red} />
+            <span style={{ fontSize: 13, letterSpacing: '0.3em', color: txtPrimary }}>
+              SKYFALL<span style={{ color: C.red }}>_</span>CTI
             </span>
           </div>
 
-          <p className="lp-neon" style={{ fontSize: 10, letterSpacing: '0.3em', color: R, marginBottom: 10 }}>
+          <p className="lp-neon" style={{ fontSize: 10, letterSpacing: '0.3em', color: C.red, marginBottom: 10 }}>
             EXPLORE THE PLATFORM
           </p>
           <h1 style={{
             fontSize: 'clamp(1.6rem, 4.5vw, 3rem)', fontWeight: 900,
-            letterSpacing: '0.04em', color: '#fff', lineHeight: 1.1,
+            letterSpacing: '0.04em', color: txtPrimary, lineHeight: 1.1,
             margin: '0 0 10px',
           }}>
             CHOOSE YOUR<br />
-            <span style={{ color: R }}>ENTRY POINT</span>
+            <span style={{ color: C.red }}>ENTRY POINT</span>
           </h1>
-          <p className="lp-flicker" style={{ fontSize: 10, color: 'rgba(212,212,212,0.3)', letterSpacing: '0.16em' }}>
+          <p className="lp-flicker" style={{ fontSize: 10, color: txtMuted, letterSpacing: '0.16em' }}>
             SNAPSHOT — 2026-05-28
           </p>
         </div>
@@ -196,7 +231,7 @@ export default function EnterPage() {
                 className={opt.pulse}
                 style={{
                   position: 'relative',
-                  background: isHov ? `${opt.color}12` : 'rgba(10,10,10,0.88)',
+                  background: isHov ? cardBgHov(opt.color) : cardBg,
                   border: `1px solid ${opt.color}${isHov ? 'cc' : '55'}`,
                   transition: 'background 220ms, border-color 220ms',
                   cursor: 'pointer',
@@ -240,7 +275,7 @@ export default function EnterPage() {
                   <h2 style={{
                     fontSize: 'clamp(1.15rem, 2.8vw, 1.55rem)',
                     fontWeight: 900, letterSpacing: '0.07em',
-                    color: isHov ? '#fff' : '#D4D4D4',
+                    color: isHov ? titleHov : txtPrimary,
                     marginBottom: 12, lineHeight: 1.15,
                     transition: 'color 220ms',
                   }}>
@@ -250,7 +285,7 @@ export default function EnterPage() {
                   {/* Desc */}
                   <p style={{
                     fontSize: 12, lineHeight: 1.8,
-                    color: isHov ? 'rgba(226,226,226,0.68)' : 'rgba(226,226,226,0.38)',
+                    color: isHov ? txtBodyHov : txtBody,
                     marginBottom: 18, transition: 'color 220ms',
                   }}>
                     {opt.desc}
@@ -299,8 +334,8 @@ export default function EnterPage() {
             { v: '191',     l: 'THREAT ACTORS'  },
             { v: '5M+',     l: 'GRAPH NODES'    },
           ].map(({ v, l }) => (
-            <span key={l} style={{ color: 'rgba(212,212,212,0.2)' }}>
-              <span style={{ color: 'rgba(232,84,25,0.55)' }}>{v}</span>{'  '}{l}
+            <span key={l} style={{ color: dimStats }}>
+              <span style={{ color: `${C.red}80` }}>{v}</span>{'  '}{l}
             </span>
           ))}
         </div>

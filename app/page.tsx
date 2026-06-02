@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import NologinLogo from '@/components/ui/NologinLogo'
 import { gsap } from 'gsap'
@@ -8,41 +8,45 @@ import { ParticleCanvas } from '@/components/ui/aether-flow-hero'
 import { ChaosCanvas, GraphCanvas } from '@/components/landing/EntropyCanvas'
 import { LandingGlobe } from '@/components/landing/LandingGlobe'
 import IntegrationsSection from '@/components/landing/IntegrationsSection'
+import { useTheme } from '@/lib/theme'
 import {
   Shield, Radio, Lock, ChevronDown, Database, Globe,
   Network, ScanSearch, BarChart3, LayoutDashboard,
   ArrowRight, Share2, Zap, Crosshair, BrainCircuit, GitMerge,
-  GitBranch, ExternalLink, Terminal, Layers, Eye,
+  GitBranch, ExternalLink, Terminal, Layers, Eye, Sun, Moon,
 } from 'lucide-react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-/* ─── Design tokens ──────────────────────────────────────── */
-const R    = '#E85419'
-const RG   = '0 0 22px rgba(232,84,25,0.55)'
-const RD   = 'rgba(232,84,25,0.28)'
-const BG   = '#000000'
-const TXT  = '#E2E2E2'
-const MUT  = 'rgba(212,212,212,0.55)'
-const SRF  = 'rgba(232,84,25,0.06)'
-const GRN  = '#00FF41'
-const MONO = "'JetBrains Mono','Share Tech Mono',monospace"
+/* ─── Landing color context ──────────────────────────────── */
+type LC = {
+  R: string; RD: string; RG: string
+  BG: string; TXT: string; MUT: string; SRF: string; GRN: string; MONO: string
+  DIM: string; BDIM: string; CARD: string
+  isDark: boolean; toggle: () => void
+}
+const LCtx = createContext<LC>({} as LC)
+const useLC = () => useContext(LCtx)
 
 /* ─── Bracket corners ────────────────────────────────────── */
-function Brackets({ color = R, size = 10 }: { color?: string; size?: number }) {
+function Brackets({ color, size = 10 }: { color?: string; size?: number }) {
+  const { R } = useLC()
+  const c = color ?? R
   const s: React.CSSProperties = { position: 'absolute', width: size, height: size }
   return (
     <>
-      <div style={{ ...s, top: -1, left:  -1, borderTop:    `2px solid ${color}`, borderLeft:  `2px solid ${color}` }} />
-      <div style={{ ...s, top: -1, right: -1, borderTop:    `2px solid ${color}`, borderRight: `2px solid ${color}` }} />
-      <div style={{ ...s, bottom: -1, left:  -1, borderBottom: `2px solid ${color}`, borderLeft:  `2px solid ${color}` }} />
-      <div style={{ ...s, bottom: -1, right: -1, borderBottom: `2px solid ${color}`, borderRight: `2px solid ${color}` }} />
+      <div style={{ ...s, top: -1, left:  -1, borderTop:    `2px solid ${c}`, borderLeft:  `2px solid ${c}` }} />
+      <div style={{ ...s, top: -1, right: -1, borderTop:    `2px solid ${c}`, borderRight: `2px solid ${c}` }} />
+      <div style={{ ...s, bottom: -1, left:  -1, borderBottom: `2px solid ${c}`, borderLeft:  `2px solid ${c}` }} />
+      <div style={{ ...s, bottom: -1, right: -1, borderBottom: `2px solid ${c}`, borderRight: `2px solid ${c}` }} />
     </>
   )
 }
 
 /* ─── Scanlines ──────────────────────────────────────────── */
 function Scanlines() {
+  const { isDark } = useLC()
+  if (!isDark) return null
   return (
     <div style={{
       position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5,
@@ -96,14 +100,14 @@ const STYLES = `
 /* ─── Pipeline data ──────────────────────────────────────── */
 const PIPELINE = [
   {
-    id: 'capture', name: 'CAPTURE', tech: 'Multi-Source Ingestion', color: R,
+    id: 'capture', name: 'CAPTURE', tech: 'Multi-Source Ingestion', color: '#E85419',
     icon: Database,
     desc: 'Six dedicated crawlers and ingestors pull from MITRE ATT&CK, CISA KEV, NVD, AlienVault OTX, Telegram threat channels, GitHub IOC dumps, and abuse.ch feeds. n8n orchestrates execution schedules.',
     metrics: [{ l: 'DATA SOURCES', v: '9+' }, { l: 'CRAWLERS', v: '6' }, { l: 'UPTIME', v: '99.9%' }],
     tags: ['mitre-ingestor', 'telegram-crawler', 'dumps-crawler', 'feeds2stix', 'kevin-api', 'n8n'],
   },
   {
-    id: 'enrich', name: 'ENRICH', tech: 'IntelOwl On-Demand', color: R,
+    id: 'enrich', name: 'ENRICH', tech: 'IntelOwl On-Demand', color: '#E85419',
     icon: ScanSearch,
     desc: 'Analyst-submitted IOCs trigger IntelOwl playbooks — SkyfallCTIipReputation, SkyfallCTIurlreputation, SkyfallCTIHashReputation. Results are converted to STIX by intelowl-client and pushed to enrichment.results.',
     metrics: [{ l: 'ANALYZERS', v: '50+' }, { l: 'PLAYBOOKS', v: '3' }, { l: 'FP RATE', v: '0.3%' }],
@@ -148,10 +152,10 @@ const PIPELINE = [
 
 /* ─── Platform modules ───────────────────────────────────── */
 const MODULES = [
-  { icon: ScanSearch,    color: R,         title: 'IOC ANALYSIS ENGINE', metric: '50+ analyzers', body: 'Submit any IP, hash, or domain. IntelOwl routes to the correct playbook — SkyfallCTIipReputation, SkyfallCTIurlreputation, or SkyfallCTIHashReputation — and returns a unified verdict in seconds.', tags: ['IP','HASH','DOMAIN','URL'] },
-  { icon: BrainCircuit,  color: '#a855f7', title: 'AI CTI ASSISTANT',   metric: 'Graph-powered Q&A', body: 'Natural-language interface to the Neo4j knowledge graph. MCP connects LLMs to CTI data — ask about TTPs, APT groups, CVEs, or campaign attribution with source attribution.', tags: ['MCP','Neo4j','LLM','RAG'] },
-  { icon: Network,       color: '#22d3ee', title: 'GRAPH CONSOLE',      metric: '12-hop traversal', body: 'Full Neo4j browser with curated Cypher presets. Visualize actor → infrastructure → malware → victim relationships across 5M+ nodes.', tags: ['Cypher','Neo4j','ATT&CK','Viz'] },
-  { icon: BarChart3,     color: '#FF8C00', title: 'DASHBOARDS',         metric: '4+ views', body: 'Real-time dashboards for IOC trends, CVE exposure, malware activity, and MITRE ATT&CK heatmap. All backed by Cypher queries to Neo4j.', tags: ['ATT&CK','CVEs','IOCs','MITRE'] },
+  { icon: ScanSearch,    color: '#E85419',  title: 'IOC ANALYSIS ENGINE', metric: '50+ analyzers', body: 'Submit any IP, hash, or domain. IntelOwl routes to the correct playbook — SkyfallCTIipReputation, SkyfallCTIurlreputation, or SkyfallCTIHashReputation — and returns a unified verdict in seconds.', tags: ['IP','HASH','DOMAIN','URL'] },
+  { icon: BrainCircuit,  color: '#a855f7',  title: 'AI CTI ASSISTANT',   metric: 'Graph-powered Q&A', body: 'Natural-language interface to the Neo4j knowledge graph. MCP connects LLMs to CTI data — ask about TTPs, APT groups, CVEs, or campaign attribution with source attribution.', tags: ['MCP','Neo4j','LLM','RAG'] },
+  { icon: Network,       color: '#22d3ee',  title: 'GRAPH CONSOLE',      metric: '12-hop traversal', body: 'Full Neo4j browser with curated Cypher presets. Visualize actor → infrastructure → malware → victim relationships across 5M+ nodes.', tags: ['Cypher','Neo4j','ATT&CK','Viz'] },
+  { icon: BarChart3,     color: '#FF8C00',  title: 'DASHBOARDS',         metric: '4+ views', body: 'Real-time dashboards for IOC trends, CVE exposure, malware activity, and MITRE ATT&CK heatmap. All backed by Cypher queries to Neo4j.', tags: ['ATT&CK','CVEs','IOCs','MITRE'] },
 ]
 
 const CAPABILITIES = [
@@ -169,10 +173,9 @@ const THREAT_FEED_BASE = [
   { region: 'BR', actor: 'Unknown',    type: 'Botnet Loader',      severity: 'MEDIUM'   },
 ]
 
-const SEV_COLOR: Record<string, string> = { CRITICAL: R, HIGH: '#FF8C00', MEDIUM: '#FFD700' }
-
 /* ─── Pipeline card ──────────────────────────────────────── */
 function PipelineCard({ step, idx }: { step: typeof PIPELINE[0]; idx: number }) {
+  const { MUT, DIM, BDIM, CARD } = useLC()
   const [hov, setHov] = useState(false)
   const Icon = step.icon
   return (
@@ -181,11 +184,11 @@ function PipelineCard({ step, idx }: { step: typeof PIPELINE[0]; idx: number }) 
       onMouseLeave={() => setHov(false)}
       style={{
         flexShrink: 0, width: 360, position: 'relative',
-        background: hov ? `${step.color}06` : '#0D0D0D',
-        border: `1px solid ${hov ? step.color + '40' : '#1a1a1a'}`,
+        background: hov ? `${step.color}06` : CARD,
+        border: `1px solid ${hov ? step.color + '40' : BDIM}`,
         padding: 24, display: 'flex', flexDirection: 'column', gap: 14,
         transition: 'border-color 160ms, background 160ms',
-        fontFamily: MONO,
+        fontFamily: "'JetBrains Mono','Share Tech Mono',monospace",
       }}
     >
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: step.color }} />
@@ -197,20 +200,20 @@ function PipelineCard({ step, idx }: { step: typeof PIPELINE[0]; idx: number }) 
             <Icon size={16} color={step.color} />
           </div>
           <div>
-            <div style={{ fontSize: 10, color: '#4a4a4a', letterSpacing: '0.15em' }}>{step.tech}</div>
+            <div style={{ fontSize: 10, color: DIM, letterSpacing: '0.15em' }}>{step.tech}</div>
             <div style={{ fontSize: 20, color: step.color, letterSpacing: '0.2em', fontWeight: 700 }}>{step.name}</div>
           </div>
         </div>
-        <span style={{ fontSize: 10, color: '#4a4a4a', letterSpacing: '0.12em' }}>
+        <span style={{ fontSize: 10, color: DIM, letterSpacing: '0.12em' }}>
           {String(idx + 1).padStart(2, '0')} / {String(PIPELINE.length).padStart(2, '0')}
         </span>
       </div>
       <p style={{ fontSize: 12, color: MUT, lineHeight: 1.7, flex: 1 }}>{step.desc}</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, borderTop: '1px solid #1a1a1a', paddingTop: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, borderTop: `1px solid ${BDIM}`, paddingTop: 12 }}>
         {step.metrics.map(m => (
           <div key={m.l} style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 13, color: step.color, fontWeight: 700 }}>{m.v}</div>
-            <div style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.12em', marginTop: 2 }}>{m.l}</div>
+            <div style={{ fontSize: 9, color: DIM, letterSpacing: '0.12em', marginTop: 2 }}>{m.l}</div>
           </div>
         ))}
       </div>
@@ -225,6 +228,24 @@ function PipelineCard({ step, idx }: { step: typeof PIPELINE[0]; idx: number }) 
 
 /* ─── Main page ──────────────────────────────────────────── */
 export default function LandingPage() {
+  const { C, isDark, toggle } = useTheme()
+
+  const R    = C.red
+  const RD   = C.redDim
+  const RG   = C.redGlow
+  const BG   = C.bg
+  const TXT  = C.white
+  const MUT  = C.muted
+  const SRF  = C.surface
+  const GRN  = C.green
+  const MONO = C.mono
+  const DIM  = isDark ? '#4a4a4a' : 'rgba(0,0,0,0.42)'
+  const BDIM = isDark ? '#1a1a1a' : 'rgba(0,0,0,0.09)'
+  const CARD = isDark ? '#0D0D0D' : 'rgba(0,0,0,0.025)'
+  const SEV_COLOR: Record<string, string> = { CRITICAL: R, HIGH: C.orange, MEDIUM: '#FFD700' }
+
+  const lc: LC = { R, RD, RG, BG, TXT, MUT, SRF, GRN, MONO, DIM, BDIM, CARD, isDark, toggle }
+
   const pipelineRef = useRef<HTMLDivElement>(null)
   const trackRef    = useRef<HTMLDivElement>(null)
   const progressRef = useRef<HTMLDivElement>(null)
@@ -323,464 +344,481 @@ export default function LandingPage() {
     return () => ctx.revert()
   }, [])
 
-  const base: React.CSSProperties = { fontFamily: MONO, color: TXT, background: BG }
-
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-      <div style={{ ...base, minHeight: '100vh', position: 'relative', overflowX: 'hidden' }}>
+    <LCtx.Provider value={lc}>
+      <>
+        <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+        <div style={{ fontFamily: MONO, color: TXT, background: BG, minHeight: '100vh', position: 'relative', overflowX: 'hidden', transition: 'background 300ms, color 300ms' }}>
 
-        {/* ══════════ NAVBAR ══════════ */}
-        <nav style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 56,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 28px', transition: 'all 300ms',
-          background: scrolled ? 'rgba(0,0,0,0.95)' : 'transparent',
-          borderBottom: scrolled ? `1px solid ${RD}` : 'none',
-        }}>
-          <a href="#lp-hero" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{ width: 2, height: 22, background: R, boxShadow: RG, flexShrink: 0 }} />
-            <Shield size={15} color={R} />
-            <span style={{ fontSize: 13, letterSpacing: '0.3em', color: TXT }}>
-              SKYFALL<span style={{ color: R }}>_</span>CTI
-            </span>
-          </a>
-          <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
-            {[['PIPELINE','#lp-pipeline'],['PLATFORM','#lp-platform'],['TELEMETRY','#lp-globe']].map(([l,h]) => (
-              <a key={h} href={h} style={{ fontSize: 10, letterSpacing: '0.22em', color: MUT, textDecoration: 'none', transition: 'color 150ms' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = R }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = MUT }}>
-                {l}
-              </a>
-            ))}
-          </div>
-          <a href="https://nologin.es/en/" target="_blank" rel="noopener noreferrer"
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 14px', border: '1px solid rgba(255,255,255,0.08)', textDecoration: 'none', transition: 'border-color 200ms' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = RD }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)' }}
-          >
-            <span style={{ fontSize: 8, color: '#4a4a4a', letterSpacing: '0.18em', whiteSpace: 'nowrap' }}>IN COLLAB. WITH</span>
-            <NologinLogo height={32} />
-          </a>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 10 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: GRN }}>
-              <Radio size={8} style={{ animation: 'lp-flicker 3s infinite' }} /> ACTIVE
-            </span>
-            <span style={{ color: '#4a4a4a' }}>{clock}</span>
-            <Link href="/enter"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-                border: `1px solid ${R}`, color: R, textDecoration: 'none',
-                fontSize: 10, letterSpacing: '0.18em', transition: 'all 200ms',
-              }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = R; el.style.color = '#000' }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.color = R }}
-            >
-              <Lock size={9} /> ENTER PLATFORM
-            </Link>
-          </div>
-        </nav>
-
-        {/* ══════════ HERO ══════════ */}
-        <section id="lp-hero" style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
-          <ParticleCanvas />
-          <Scanlines />
-          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3,
-            background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.85) 100%)' }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 160, pointerEvents: 'none', zIndex: 4,
-            background: 'linear-gradient(to bottom, transparent, #000)' }} />
-          <div style={{
-            position: 'relative', zIndex: 6, height: '100%',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            textAlign: 'center', padding: '0 24px',
+          {/* ══════════ NAVBAR ══════════ */}
+          <nav style={{
+            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 56,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '0 28px', transition: 'all 300ms',
+            background: scrolled ? (isDark ? 'rgba(0,0,0,0.95)' : 'rgba(240,239,232,0.97)') : 'transparent',
+            borderBottom: scrolled ? `1px solid ${RD}` : 'none',
           }}>
-            <div ref={heroTagRef} style={{
-              display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28,
-              padding: '6px 16px', border: `1px solid ${RD}`, fontSize: 11, letterSpacing: '0.28em', color: R,
-            }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: GRN, boxShadow: `0 0 6px ${GRN}`, animation: 'lp-flicker 2s infinite' }} />
-              <span style={{ color: GRN }}>THREAT INTELLIGENCE</span>
-              <span style={{ color: RD }}>—</span>
-              FEED ACTIVE
-            </div>
-            <h1
-              ref={heroTitleRef}
-              className="lp-glitch"
-              data-text="SKYFALL_CTI"
-              style={{ fontSize: 'clamp(2.8rem, 9vw, 7rem)', fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1, color: '#fff', marginBottom: 20, marginTop: 0 }}
-            >
-              SKYFALL_CTI
-            </h1>
-            <p ref={heroSubRef} style={{ fontSize: 16, color: MUT, maxWidth: 540, lineHeight: 1.7, marginBottom: 36 }}>
-              Cyber threat intelligence at machine speed.<br />
-              <span style={{ color: R }}>Crawl.</span>{' '}
-              <span style={{ color: R }}>Correlate.</span>{' '}
-              <span style={{ color: R }}>Neutralize.</span>
-            </p>
-            <div ref={heroCtaRef} style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 52 }}>
-              <Link href="/enter" style={{
-                padding: '12px 32px', background: R, color: '#000', textDecoration: 'none',
-                fontSize: 12, fontWeight: 900, letterSpacing: '0.22em',
-                boxShadow: `0 0 28px rgba(232,84,25,0.5)`, position: 'relative', transition: 'opacity 150ms',
-              }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-              >
-                <Brackets color="#000" size={8} />
-                ENTER PLATFORM
-              </Link>
-              <a href="https://nologin.es/en/contact" target="_blank" rel="noopener noreferrer" style={{
-                padding: '12px 32px', border: `1px solid ${RD}`, color: R,
-                textDecoration: 'none', fontSize: 12, letterSpacing: '0.22em',
-                transition: 'all 200ms',
-              }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(232,84,25,0.10)'; el.style.borderColor = R }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.borderColor = RD }}
-              >
-                REQUEST ACCESS
-              </a>
-              <Link href="/demo" style={{
-                display: 'flex', alignItems: 'center', gap: 7,
-                padding: '12px 32px', border: '1px solid rgba(34,211,238,0.3)', color: '#22d3ee',
-                textDecoration: 'none', fontSize: 12, letterSpacing: '0.22em',
-                transition: 'all 200ms',
-              }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(34,211,238,0.08)'; el.style.borderColor = '#22d3ee' }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.borderColor = 'rgba(34,211,238,0.3)' }}
-              >
-                <Eye size={12} /> VIEW DEMO ANALYSIS
-              </Link>
-            </div>
-            <div ref={heroStatsRef} style={{ display: 'flex', gap: 36, flexWrap: 'wrap', justifyContent: 'center' }}>
-              {[
-                { icon: Shield,   v: '9+',   l: 'CTI DATA SOURCES'    },
-                { icon: Database, v: '50+',  l: 'INTELOWL ANALYZERS'  },
-                { icon: Globe,    v: '14ms', l: 'GRAPH CORRELATION'   },
-              ].map(({ icon: Icon, v, l }) => (
-                <div key={l} className="stat-item" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <Icon size={13} color={R} />
-                  <div>
-                    <div style={{ fontSize: 17, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{v}</div>
-                    <div style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.15em', marginTop: 3 }}>{l}</div>
-                  </div>
-                </div>
+            <a href="#lp-hero" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+              <div style={{ width: 2, height: 22, background: R, boxShadow: RG, flexShrink: 0 }} />
+              <Shield size={15} color={R} />
+              <span style={{ fontSize: 13, letterSpacing: '0.3em', color: TXT }}>
+                SKYFALL<span style={{ color: R }}>_</span>CTI
+              </span>
+            </a>
+            <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+              {[['PIPELINE','#lp-pipeline'],['PLATFORM','#lp-platform'],['TELEMETRY','#lp-globe']].map(([l,h]) => (
+                <a key={h} href={h} style={{ fontSize: 10, letterSpacing: '0.22em', color: MUT, textDecoration: 'none', transition: 'color 150ms' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = R }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = MUT }}>
+                  {l}
+                </a>
               ))}
             </div>
-          </div>
-          <div style={{ position: 'absolute', top: 72, left: 24, fontSize: 9, color: RD, letterSpacing: '0.15em', zIndex: 6 }}
-            className="lp-flicker">
-            <div>NODE_01 / MADRID-EU</div>
-            <div style={{ color: 'rgba(0,255,65,0.5)', marginTop: 4 }}>● GRAPH ACTIVE</div>
-          </div>
-          <div style={{ position: 'absolute', top: 72, right: 24, textAlign: 'right', fontSize: 9, color: RD, letterSpacing: '0.15em', zIndex: 6 }}
-            className="lp-flicker">
-            <div>KAFKA TOPICS: 6 ACTIVE</div>
-            <div style={{ color: 'rgba(0,255,65,0.5)', marginTop: 4 }}>● STIX 2.1 NORMALIZED</div>
-          </div>
-          <div className="lp-bounce" style={{
-            position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-            color: 'rgba(232,84,25,0.45)', zIndex: 6,
-          }}>
-            <span style={{ fontSize: 9, letterSpacing: '0.22em' }}>SCROLL</span>
-            <ChevronDown size={14} />
-          </div>
-        </section>
-
-        {/* ══════════ PIPELINE ══════════ */}
-        <section id="lp-pipeline" ref={pipelineRef} style={{ position: 'relative', height: '100vh', overflow: 'hidden', background: BG }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: '#1a1a1a', zIndex: 20 }}>
-            <div ref={progressRef} style={{ height: '100%', background: R, boxShadow: `0 0 8px rgba(232,84,25,0.6)`, width: '0%', transition: 'none' }} />
-          </div>
-          <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0,
-            padding: '64px 32px 20px', zIndex: 10, background: BG,
-            borderBottom: '1px solid #1a1a1a', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-          }}>
-            <div>
-              <div style={{ fontSize: 10, color: R, letterSpacing: '0.25em', marginBottom: 4 }}>02 / DATA PIPELINE</div>
-              <div style={{ fontSize: 28, letterSpacing: '0.2em', fontWeight: 700, color: '#fff' }}>FROM SOURCE TO INSIGHT</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: '#4a4a4a' }}>
-              <Zap size={10} color={R} /> SCROLL TO TRAVERSE
-            </div>
-          </div>
-          <div ref={trackRef} style={{ position: 'absolute', top: 136, left: 0, display: 'flex', alignItems: 'center', paddingLeft: 32, willChange: 'transform' }}>
-            {PIPELINE.map((step, i) => (
-              <div key={step.id} style={{ display: 'flex', alignItems: 'center' }}>
-                <PipelineCard step={step} idx={i} />
-                {i < PIPELINE.length - 1 && (
-                  <div style={{ display: 'flex', alignItems: 'center', padding: '0 14px', flexShrink: 0 }}>
-                    <div style={{ width: 40, height: 1, background: 'rgba(232,84,25,0.2)' }} />
-                    <Share2 size={11} color="rgba(232,84,25,0.4)" style={{ margin: '0 4px' }} />
-                    <ArrowRight size={13} color="rgba(232,84,25,0.5)" />
-                    <div style={{ width: 16, height: 1, background: 'rgba(232,84,25,0.2)' }} />
-                  </div>
-                )}
-              </div>
-            ))}
-            <div style={{ flexShrink: 0, width: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginLeft: 28, padding: '0 28px' }}>
-              <div style={{ width: 1, height: 56, background: 'linear-gradient(to bottom, #E85419, transparent)' }} />
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 10, color: '#4a4a4a', letterSpacing: '0.18em', marginBottom: 6 }}>PIPELINE COMPLETE</div>
-                <div className="lp-neon" style={{ fontSize: 36, fontWeight: 900 }}>4 MIN</div>
-                <div style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.15em', marginTop: 4 }}>AVG MEAN TIME TO DETECT</div>
-              </div>
-              <Link href="/enter" style={{
-                marginTop: 12, padding: '8px 20px', border: `1px solid ${RD}`,
-                color: R, fontSize: 10, letterSpacing: '0.2em', textDecoration: 'none',
-                transition: 'all 200ms',
-              }}
+            <a href="https://nologin.es/en/" target="_blank" rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 14px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)'}`, textDecoration: 'none', transition: 'border-color 200ms' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = RD }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)' }}
+            >
+              <span style={{ fontSize: 8, color: DIM, letterSpacing: '0.18em', whiteSpace: 'nowrap' }}>IN COLLAB. WITH</span>
+              <NologinLogo height={32} />
+            </a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 10, color: MUT }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: GRN }}>
+                <Radio size={8} style={{ animation: 'lp-flicker 3s infinite' }} /> ACTIVE
+              </span>
+              <span style={{ color: DIM }}>{clock}</span>
+              {/* Theme toggle */}
+              <button
+                onClick={toggle}
+                style={{
+                  background: 'none', border: `1px solid ${RD}`,
+                  color: MUT, cursor: 'pointer', padding: '3px 9px',
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  fontFamily: MONO, fontSize: 9, letterSpacing: '0.12em',
+                  transition: 'border-color 150ms, color 150ms',
+                }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = R; el.style.color = R }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = RD; el.style.color = MUT }}
+              >
+                {isDark ? <Sun size={10} /> : <Moon size={10} />}
+                {isDark ? 'LIGHT' : 'DARK'}
+              </button>
+              <Link href="/enter"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
+                  border: `1px solid ${R}`, color: R, textDecoration: 'none',
+                  fontSize: 10, letterSpacing: '0.18em', transition: 'all 200ms',
+                }}
                 onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = R; el.style.color = '#000' }}
                 onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.color = R }}
               >
-                EXPLORE PLATFORM
+                <Lock size={9} /> ENTER PLATFORM
               </Link>
             </div>
-          </div>
-          <div style={{ position: 'absolute', bottom: 20, left: 28, right: 28, display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#4a4a4a', letterSpacing: '0.12em' }}>
-            <div style={{ display: 'flex', gap: 20 }}>
-              {[{ c: R, l: 'CRAWLERS ACTIVE (6)' }, { c: '#22d3ee', l: 'KAFKA TOPICS STREAMING (6)' }, { c: '#a855f7', l: 'NEO4J GRAPH ACTIVE' }].map(({ c, l }) => (
-                <span key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: c, animation: 'lp-flicker 2.5s infinite' }} />
-                  {l}
-                </span>
-              ))}
-            </div>
-            <span>DRAG / SCROLL HORIZONTAL</span>
-          </div>
-        </section>
+          </nav>
 
-        {/* ══════════ PLATFORM MODULES ══════════ */}
-        <section id="lp-platform" style={{ position: 'relative', background: BG, padding: '80px 28px', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', inset: 0, opacity: 0.03,
-            backgroundImage: 'linear-gradient(#E85419 1px,transparent 1px),linear-gradient(90deg,#E85419 1px,transparent 1px)',
-            backgroundSize: '40px 40px' }} />
-          <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto' }}>
-            <div style={{ marginBottom: 48 }}>
-              <div style={{ fontSize: 10, color: R, letterSpacing: '0.25em', marginBottom: 8 }}>03 / PLATFORM MODULES</div>
-              <div className="lp-platform-title" style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 900, letterSpacing: '0.15em', color: '#fff', lineHeight: 1.15 }}>
-                INTELLIGENCE<br /><span style={{ color: R }}>COMMAND CENTER</span>
+          {/* ══════════ HERO ══════════ */}
+          <section id="lp-hero" style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
+            <ParticleCanvas />
+            <Scanlines />
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3,
+              background: `radial-gradient(ellipse at center, transparent 30%, ${isDark ? 'rgba(0,0,0,0.85)' : 'rgba(240,239,232,0.75)'} 100%)` }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 160, pointerEvents: 'none', zIndex: 4,
+              background: `linear-gradient(to bottom, transparent, ${BG})` }} />
+            <div style={{
+              position: 'relative', zIndex: 6, height: '100%',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              textAlign: 'center', padding: '0 24px',
+            }}>
+              <div ref={heroTagRef} style={{
+                display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28,
+                padding: '6px 16px', border: `1px solid ${RD}`, fontSize: 11, letterSpacing: '0.28em', color: R,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: GRN, boxShadow: `0 0 6px ${GRN}`, animation: 'lp-flicker 2s infinite' }} />
+                <span style={{ color: GRN }}>THREAT INTELLIGENCE</span>
+                <span style={{ color: RD }}>—</span>
+                FEED ACTIVE
               </div>
-              <p style={{ marginTop: 14, fontSize: 12, color: MUT, maxWidth: 520, lineHeight: 1.8 }}>
-                Four integrated modules expose the full CTI pipeline to analysts — from raw IOC submission to graph-level correlation and AI-powered querying.
+              <h1
+                ref={heroTitleRef}
+                className="lp-glitch"
+                data-text="SKYFALL_CTI"
+                style={{ fontSize: 'clamp(2.8rem, 9vw, 7rem)', fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1, color: isDark ? '#fff' : '#080808', marginBottom: 20, marginTop: 0 }}
+              >
+                SKYFALL_CTI
+              </h1>
+              <p ref={heroSubRef} style={{ fontSize: 16, color: MUT, maxWidth: 540, lineHeight: 1.7, marginBottom: 36 }}>
+                Cyber threat intelligence at machine speed.<br />
+                <span style={{ color: R }}>Crawl.</span>{' '}
+                <span style={{ color: R }}>Correlate.</span>{' '}
+                <span style={{ color: R }}>Neutralize.</span>
               </p>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 10, marginBottom: 72 }}>
-              {MODULES.map(m => {
-                const Icon = m.icon
-                return (
-                  <div key={m.title} className="lp-module-card" style={{ position: 'relative', padding: 20, background: '#0D0D0D', border: '1px solid #1a1a1a', display: 'flex', flexDirection: 'column', gap: 10, cursor: 'pointer', transition: 'border-color 160ms,background 160ms' }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = `${m.color}40`; el.style.background = `${m.color}08` }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#1a1a1a'; el.style.background = '#0D0D0D' }}
-                  >
-                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: m.color, opacity: 0.6 }} />
-                    <div style={{ position: 'absolute', top: -1, left: -1, width: 10, height: 10, borderTop: `2px solid ${m.color}`, borderLeft: `2px solid ${m.color}` }} />
-                    <div style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderBottom: `2px solid ${m.color}`, borderRight: `2px solid ${m.color}` }} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ padding: 8, border: `1px solid ${m.color}40`, background: `${m.color}10` }}>
-                        <Icon size={15} color={m.color} />
-                      </div>
-                      <span style={{ fontSize: 9, color: `${m.color}99`, letterSpacing: '0.12em' }}>{m.metric}</span>
-                    </div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: m.color, letterSpacing: '0.18em' }}>{m.title}</div>
-                    <p style={{ fontSize: 11, color: MUT, lineHeight: 1.7, flex: 1 }}>{m.body}</p>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {m.tags.map(t => <span key={t} style={{ fontSize: 9, padding: '2px 6px', border: `1px solid ${m.color}30`, color: `${m.color}80`, letterSpacing: '0.1em' }}>{t}</span>)}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-            <div style={{ display: 'flex', gap: 56, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              <div style={{ flexShrink: 0, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ position: 'relative', padding: 4, border: `1px solid #2a2a2a` }}>
-                    <Brackets color="#4a4a4a" size={10} />
-                    <ChaosCanvas w={240} h={320} />
-                  </div>
-                  <div style={{ fontSize: 9, letterSpacing: '0.15em', marginTop: 8, textAlign: 'center', color: '#4a4a4a' }}>CHAOS / RAW DATA</div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', height: 320, marginTop: 4, color: R, fontSize: 18, opacity: 0.5 }}>→</div>
-                <div>
-                  <div style={{ position: 'relative', padding: 4, border: `1px solid ${RD}` }}>
-                    <Brackets color={R} size={10} />
-                    <GraphCanvas w={240} h={320} />
-                  </div>
-                  <div style={{ fontSize: 9, letterSpacing: '0.15em', marginTop: 8, textAlign: 'center', color: R }}>STRUCTURE / INTEL</div>
-                </div>
+              <div ref={heroCtaRef} style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 52 }}>
+                <Link href="/enter" style={{
+                  padding: '12px 32px', background: R, color: '#000', textDecoration: 'none',
+                  fontSize: 12, fontWeight: 900, letterSpacing: '0.22em',
+                  boxShadow: `0 0 28px ${R}50`, position: 'relative', transition: 'opacity 150ms',
+                }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
+                >
+                  <Brackets color="#000" size={8} />
+                  ENTER PLATFORM
+                </Link>
+                <a href="https://nologin.es/en/contact" target="_blank" rel="noopener noreferrer" style={{
+                  padding: '12px 32px', border: `1px solid ${RD}`, color: R,
+                  textDecoration: 'none', fontSize: 12, letterSpacing: '0.22em',
+                  transition: 'all 200ms',
+                }}
+                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = `${R}18`; el.style.borderColor = R }}
+                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.borderColor = RD }}
+                >
+                  REQUEST ACCESS
+                </a>
+                <Link href="/demo" style={{
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  padding: '12px 32px', border: '1px solid rgba(34,211,238,0.3)', color: '#22d3ee',
+                  textDecoration: 'none', fontSize: 12, letterSpacing: '0.22em',
+                  transition: 'all 200ms',
+                }}
+                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(34,211,238,0.08)'; el.style.borderColor = '#22d3ee' }}
+                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.borderColor = 'rgba(34,211,238,0.3)' }}
+                >
+                  <Eye size={12} /> VIEW DEMO ANALYSIS
+                </Link>
               </div>
-              <div id="lp-caps" style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 22, marginTop: 8 }}>
-                <div style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.2em', marginBottom: 4 }}>INTELLIGENCE ENGINE CAPABILITIES</div>
-                {CAPABILITIES.map(({ icon: Icon, title, body }) => (
-                  <div key={title} className="lp-cap-item" style={{ display: 'flex', gap: 14, cursor: 'pointer' }}>
-                    <div style={{ flexShrink: 0, marginTop: 2 }}>
-                      <div style={{ padding: 8, border: `1px solid ${RD}`, transition: 'all 200ms' }}
-                        onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = R; el.style.background = SRF }}
-                        onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = RD; el.style.background = 'transparent' }}
-                      >
-                        <Icon size={13} color={R} />
-                      </div>
-                    </div>
+              <div ref={heroStatsRef} style={{ display: 'flex', gap: 36, flexWrap: 'wrap', justifyContent: 'center' }}>
+                {[
+                  { icon: Shield,   v: '9+',   l: 'CTI DATA SOURCES'    },
+                  { icon: Database, v: '50+',  l: 'INTELOWL ANALYZERS'  },
+                  { icon: Globe,    v: '14ms', l: 'GRAPH CORRELATION'   },
+                ].map(({ icon: Icon, v, l }) => (
+                  <div key={l} className="stat-item" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Icon size={13} color={R} />
                     <div>
-                      <div style={{ fontSize: 10, color: R, letterSpacing: '0.18em', marginBottom: 5, fontWeight: 700 }}>{title}</div>
-                      <p style={{ fontSize: 12, color: MUT, lineHeight: 1.7 }}>{body}</p>
+                      <div style={{ fontSize: 17, fontWeight: 700, color: isDark ? '#fff' : '#080808', lineHeight: 1 }}>{v}</div>
+                      <div style={{ fontSize: 9, color: DIM, letterSpacing: '0.15em', marginTop: 3 }}>{l}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{ marginTop: 64, paddingTop: 28, borderTop: '1px solid #1a1a1a', display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 20 }}>
-              {[['992.044','NODES'],['1.992.617','RELATIONSHIPS']].map(([v,l]) => (
-                <div key={l} style={{ textAlign: 'center' }}>
-                  <div className="lp-neon" style={{ fontSize: 26, fontWeight: 900 }}>{v}</div>
-                  <div style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.15em', marginTop: 4 }}>{l}</div>
+            <div style={{ position: 'absolute', top: 72, left: 24, fontSize: 9, color: RD, letterSpacing: '0.15em', zIndex: 6 }}
+              className="lp-flicker">
+              <div>NODE_01 / MADRID-EU</div>
+              <div style={{ color: `${GRN}80`, marginTop: 4 }}>● GRAPH ACTIVE</div>
+            </div>
+            <div style={{ position: 'absolute', top: 72, right: 24, textAlign: 'right', fontSize: 9, color: RD, letterSpacing: '0.15em', zIndex: 6 }}
+              className="lp-flicker">
+              <div>KAFKA TOPICS: 6 ACTIVE</div>
+              <div style={{ color: `${GRN}80`, marginTop: 4 }}>● STIX 2.1 NORMALIZED</div>
+            </div>
+            <div className="lp-bounce" style={{
+              position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+              color: `${R}70`, zIndex: 6,
+            }}>
+              <span style={{ fontSize: 9, letterSpacing: '0.22em' }}>SCROLL</span>
+              <ChevronDown size={14} />
+            </div>
+          </section>
+
+          {/* ══════════ PIPELINE ══════════ */}
+          <section id="lp-pipeline" ref={pipelineRef} style={{ position: 'relative', height: '100vh', overflow: 'hidden', background: BG, transition: 'background 300ms' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: BDIM, zIndex: 20 }}>
+              <div ref={progressRef} style={{ height: '100%', background: R, boxShadow: `0 0 8px ${R}80`, width: '0%', transition: 'none' }} />
+            </div>
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              padding: '64px 32px 20px', zIndex: 10, background: BG,
+              borderBottom: `1px solid ${BDIM}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
+              transition: 'background 300ms',
+            }}>
+              <div>
+                <div style={{ fontSize: 10, color: R, letterSpacing: '0.25em', marginBottom: 4 }}>02 / DATA PIPELINE</div>
+                <div style={{ fontSize: 28, letterSpacing: '0.2em', fontWeight: 700, color: TXT }}>FROM SOURCE TO INSIGHT</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: DIM }}>
+                <Zap size={10} color={R} /> SCROLL TO TRAVERSE
+              </div>
+            </div>
+            <div ref={trackRef} style={{ position: 'absolute', top: 136, left: 0, display: 'flex', alignItems: 'center', paddingLeft: 32, willChange: 'transform' }}>
+              {PIPELINE.map((step, i) => (
+                <div key={step.id} style={{ display: 'flex', alignItems: 'center' }}>
+                  <PipelineCard step={step} idx={i} />
+                  {i < PIPELINE.length - 1 && (
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '0 14px', flexShrink: 0 }}>
+                      <div style={{ width: 40, height: 1, background: `${R}30` }} />
+                      <Share2 size={11} color={`${R}60`} style={{ margin: '0 4px' }} />
+                      <ArrowRight size={13} color={`${R}70`} />
+                      <div style={{ width: 16, height: 1, background: `${R}30` }} />
+                    </div>
+                  )}
                 </div>
               ))}
+              <div style={{ flexShrink: 0, width: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginLeft: 28, padding: '0 28px' }}>
+                <div style={{ width: 1, height: 56, background: `linear-gradient(to bottom, ${R}, transparent)` }} />
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 10, color: DIM, letterSpacing: '0.18em', marginBottom: 6 }}>PIPELINE COMPLETE</div>
+                  <div className="lp-neon" style={{ fontSize: 36, fontWeight: 900, color: TXT }}>4 MIN</div>
+                  <div style={{ fontSize: 9, color: DIM, letterSpacing: '0.15em', marginTop: 4 }}>AVG MEAN TIME TO DETECT</div>
+                </div>
+                <Link href="/enter" style={{
+                  marginTop: 12, padding: '8px 20px', border: `1px solid ${RD}`,
+                  color: R, fontSize: 10, letterSpacing: '0.2em', textDecoration: 'none',
+                  transition: 'all 200ms',
+                }}
+                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = R; el.style.color = '#000' }}
+                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'transparent'; el.style.color = R }}
+                >
+                  EXPLORE PLATFORM
+                </Link>
+              </div>
             </div>
-          </div>
-        </section>
+            <div style={{ position: 'absolute', bottom: 20, left: 28, right: 28, display: 'flex', justifyContent: 'space-between', fontSize: 9, color: DIM, letterSpacing: '0.12em' }}>
+              <div style={{ display: 'flex', gap: 20 }}>
+                {[{ c: R, l: 'CRAWLERS ACTIVE (6)' }, { c: '#22d3ee', l: 'KAFKA TOPICS STREAMING (6)' }, { c: '#a855f7', l: 'NEO4J GRAPH ACTIVE' }].map(({ c, l }) => (
+                  <span key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: c, animation: 'lp-flicker 2.5s infinite' }} />
+                    {l}
+                  </span>
+                ))}
+              </div>
+              <span>DRAG / SCROLL HORIZONTAL</span>
+            </div>
+          </section>
 
-        {/* ══════════ GLOBAL TELEMETRY ══════════ */}
-        <section id="lp-globe" style={{ background: BG, borderTop: '1px solid #1a1a1a', padding: '72px 28px 0' }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-            <div style={{ marginBottom: 40 }}>
-              <div style={{ fontSize: 10, color: R, letterSpacing: '0.25em', marginBottom: 8 }}>04 / GLOBAL TELEMETRY</div>
-              <div className="lp-globe-title" style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 900, letterSpacing: '0.15em', color: '#fff' }}>
-                THREAT LANDSCAPE
+          {/* ══════════ PLATFORM MODULES ══════════ */}
+          <section id="lp-platform" style={{ position: 'relative', background: BG, padding: '80px 28px', overflow: 'hidden', transition: 'background 300ms' }}>
+            <div style={{ position: 'absolute', inset: 0, opacity: isDark ? 0.03 : 0.015,
+              backgroundImage: `linear-gradient(${R} 1px,transparent 1px),linear-gradient(90deg,${R} 1px,transparent 1px)`,
+              backgroundSize: '40px 40px' }} />
+            <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto' }}>
+              <div style={{ marginBottom: 48 }}>
+                <div style={{ fontSize: 10, color: R, letterSpacing: '0.25em', marginBottom: 8 }}>03 / PLATFORM MODULES</div>
+                <div className="lp-platform-title" style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 900, letterSpacing: '0.15em', color: TXT, lineHeight: 1.15 }}>
+                  INTELLIGENCE<br /><span style={{ color: R }}>COMMAND CENTER</span>
+                </div>
+                <p style={{ marginTop: 14, fontSize: 12, color: MUT, maxWidth: 520, lineHeight: 1.8 }}>
+                  Four integrated modules expose the full CTI pipeline to analysts — from raw IOC submission to graph-level correlation and AI-powered querying.
+                </p>
               </div>
-              <p style={{ marginTop: 10, fontSize: 12, color: MUT, maxWidth: 480, lineHeight: 1.8 }}>
-                Global monitoring of threat actor activity across 193 countries. Every arc is a confirmed C2 connection. Every pulse is a threat indicator.
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: 36, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1, minWidth: 300 }}>
-                <LandingGlobe />
-              </div>
-              <div id="lp-feed" style={{ width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div style={{ border: '1px solid #1a1a1a' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#0D0D0D', borderBottom: '1px solid #1a1a1a' }}>
-                    <span style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.18em' }}>THREAT FEED</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 9, color: GRN }}>
-                      <Radio size={7} style={{ animation: 'lp-flicker 2s infinite' }} /> ACTIVE
-                    </span>
-                  </div>
-                  {feed.map((item, i) => (
-                    <div key={i} className="lp-feed-row" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: '1px solid #1a1a1a', cursor: 'pointer', transition: 'background 150ms' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#0D0D0D' }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 10, marginBottom: 72 }}>
+                {MODULES.map(m => {
+                  const Icon = m.icon
+                  return (
+                    <div key={m.title} className="lp-module-card" style={{ position: 'relative', padding: 20, background: CARD, border: `1px solid ${BDIM}`, display: 'flex', flexDirection: 'column', gap: 10, cursor: 'pointer', transition: 'border-color 160ms,background 160ms' }}
+                      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = `${m.color}40`; el.style.background = `${m.color}08` }}
+                      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = BDIM; el.style.background = CARD }}
                     >
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: SEV_COLOR[item.severity], boxShadow: `0 0 5px ${SEV_COLOR[item.severity]}`, flexShrink: 0 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <span style={{ fontSize: 9, color: '#4a4a4a' }}>[{item.region}]</span>
-                          <span style={{ fontSize: 11, color: '#fff' }}>{item.actor}</span>
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: m.color, opacity: 0.6 }} />
+                      <div style={{ position: 'absolute', top: -1, left: -1, width: 10, height: 10, borderTop: `2px solid ${m.color}`, borderLeft: `2px solid ${m.color}` }} />
+                      <div style={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderBottom: `2px solid ${m.color}`, borderRight: `2px solid ${m.color}` }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ padding: 8, border: `1px solid ${m.color}40`, background: `${m.color}10` }}>
+                          <Icon size={15} color={m.color} />
                         </div>
-                        <div style={{ fontSize: 9, color: 'rgba(226,226,226,0.35)' }}>{item.type} · {item.ts}</div>
+                        <span style={{ fontSize: 9, color: `${m.color}99`, letterSpacing: '0.12em' }}>{m.metric}</span>
                       </div>
-                      <span style={{ fontSize: 8, color: SEV_COLOR[item.severity], letterSpacing: '0.1em', flexShrink: 0 }}>{item.severity}</span>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: m.color, letterSpacing: '0.18em' }}>{m.title}</div>
+                      <p style={{ fontSize: 11, color: MUT, lineHeight: 1.7, flex: 1 }}>{m.body}</p>
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        {m.tags.map(t => <span key={t} style={{ fontSize: 9, padding: '2px 6px', border: `1px solid ${m.color}30`, color: `${m.color}80`, letterSpacing: '0.1em' }}>{t}</span>)}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div style={{ display: 'flex', gap: 56, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                <div style={{ flexShrink: 0, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ position: 'relative', padding: 4, border: `1px solid ${BDIM}` }}>
+                      <Brackets color={DIM} size={10} />
+                      <ChaosCanvas w={240} h={320} />
+                    </div>
+                    <div style={{ fontSize: 9, letterSpacing: '0.15em', marginTop: 8, textAlign: 'center', color: DIM }}>CHAOS / RAW DATA</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', height: 320, marginTop: 4, color: R, fontSize: 18, opacity: 0.5 }}>→</div>
+                  <div>
+                    <div style={{ position: 'relative', padding: 4, border: `1px solid ${RD}` }}>
+                      <Brackets size={10} />
+                      <GraphCanvas w={240} h={320} />
+                    </div>
+                    <div style={{ fontSize: 9, letterSpacing: '0.15em', marginTop: 8, textAlign: 'center', color: R }}>STRUCTURE / INTEL</div>
+                  </div>
+                </div>
+                <div id="lp-caps" style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 22, marginTop: 8 }}>
+                  <div style={{ fontSize: 9, color: DIM, letterSpacing: '0.2em', marginBottom: 4 }}>INTELLIGENCE ENGINE CAPABILITIES</div>
+                  {CAPABILITIES.map(({ icon: Icon, title, body }) => (
+                    <div key={title} className="lp-cap-item" style={{ display: 'flex', gap: 14, cursor: 'pointer' }}>
+                      <div style={{ flexShrink: 0, marginTop: 2 }}>
+                        <div style={{ padding: 8, border: `1px solid ${RD}`, transition: 'all 200ms' }}
+                          onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = R; el.style.background = SRF }}
+                          onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = RD; el.style.background = 'transparent' }}
+                        >
+                          <Icon size={13} color={R} />
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 10, color: R, letterSpacing: '0.18em', marginBottom: 5, fontWeight: 700 }}>{title}</div>
+                        <p style={{ fontSize: 12, color: MUT, lineHeight: 1.7 }}>{body}</p>
+                      </div>
                     </div>
                   ))}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 14px', background: '#0D0D0D', fontSize: 9 }}>
-                    <span style={{ color: '#4a4a4a' }}>+{evtCount.toLocaleString()} events today</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: R }}>
-                      <Zap size={8} /> REAL-TIME
-                    </span>
+                </div>
+              </div>
+              <div style={{ marginTop: 64, paddingTop: 28, borderTop: `1px solid ${BDIM}`, display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 20 }}>
+                {[['992.044','NODES'],['1.992.617','RELATIONSHIPS']].map(([v,l]) => (
+                  <div key={l} style={{ textAlign: 'center' }}>
+                    <div className="lp-neon" style={{ fontSize: 26, fontWeight: 900, color: TXT }}>{v}</div>
+                    <div style={{ fontSize: 9, color: DIM, letterSpacing: '0.15em', marginTop: 4 }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ══════════ GLOBAL TELEMETRY ══════════ */}
+          <section id="lp-globe" style={{ background: BG, borderTop: `1px solid ${BDIM}`, padding: '72px 28px 0', transition: 'background 300ms' }}>
+            <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+              <div style={{ marginBottom: 40 }}>
+                <div style={{ fontSize: 10, color: R, letterSpacing: '0.25em', marginBottom: 8 }}>04 / GLOBAL TELEMETRY</div>
+                <div className="lp-globe-title" style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 900, letterSpacing: '0.15em', color: TXT }}>
+                  THREAT LANDSCAPE
+                </div>
+                <p style={{ marginTop: 10, fontSize: 12, color: MUT, maxWidth: 480, lineHeight: 1.8 }}>
+                  Global monitoring of threat actor activity across 193 countries. Every arc is a confirmed C2 connection. Every pulse is a threat indicator.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 36, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, minWidth: 300 }}>
+                  <LandingGlobe />
+                </div>
+                <div id="lp-feed" style={{ width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <div style={{ border: `1px solid ${BDIM}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: CARD, borderBottom: `1px solid ${BDIM}` }}>
+                      <span style={{ fontSize: 9, color: DIM, letterSpacing: '0.18em' }}>THREAT FEED</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 9, color: GRN }}>
+                        <Radio size={7} style={{ animation: 'lp-flicker 2s infinite' }} /> ACTIVE
+                      </span>
+                    </div>
+                    {feed.map((item, i) => (
+                      <div key={i} className="lp-feed-row" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: `1px solid ${BDIM}`, cursor: 'pointer', transition: 'background 150ms' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = CARD }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                      >
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: SEV_COLOR[item.severity], boxShadow: `0 0 5px ${SEV_COLOR[item.severity]}`, flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <span style={{ fontSize: 9, color: DIM }}>[{item.region}]</span>
+                            <span style={{ fontSize: 11, color: TXT }}>{item.actor}</span>
+                          </div>
+                          <div style={{ fontSize: 9, color: MUT }}>{item.type} · {item.ts}</div>
+                        </div>
+                        <span style={{ fontSize: 8, color: SEV_COLOR[item.severity], letterSpacing: '0.1em', flexShrink: 0 }}>{item.severity}</span>
+                      </div>
+                    ))}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 14px', background: CARD, fontSize: 9 }}>
+                      <span style={{ color: DIM }}>+{evtCount.toLocaleString()} events today</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: R }}>
+                        <Zap size={8} /> REAL-TIME
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ══════════ INTEGRATIONS ══════════ */}
-        <IntegrationsSection />
+          {/* ══════════ INTEGRATIONS ══════════ */}
+          <IntegrationsSection />
 
-        {/* ══════════ CTA ══════════ */}
-        <section style={{ background: BG, padding: '80px 28px 100px', borderTop: '1px solid #1a1a1a', textAlign: 'center' }}>
-          <div style={{ maxWidth: 680, margin: '0 auto', position: 'relative' }}>
-            <Brackets color={R} size={20} />
-            <div style={{ padding: '60px 40px' }}>
-              <div style={{ fontSize: 10, color: R, letterSpacing: '0.3em', marginBottom: 16 }}>
-                ▶ SKYFALL_CTI — THREAT_INTELLIGENCE_COMMAND_CENTER
-              </div>
-              <h2 style={{ fontSize: 'clamp(1.8rem, 5vw, 3.2rem)', fontWeight: 900, letterSpacing: '0.06em', color: '#fff', marginBottom: 18, lineHeight: 1.15 }}>
-                READY TO<br />
-                <span style={{ color: R }}>ENTER THE PLATFORM?</span>
-              </h2>
-              <p style={{ fontSize: 13, color: MUT, lineHeight: 1.8, marginBottom: 40, maxWidth: 480, margin: '0 auto 40px' }}>
-                All modules are operational — IOC Analysis Engine, AI CTI Assistant, Graph Console, and Analytics Dashboards. Start investigating threats now.
-              </p>
-              <Link href="/enter"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 12,
-                  padding: '18px 52px', background: R, color: '#000',
-                  fontSize: 14, fontWeight: 900, letterSpacing: '0.28em',
-                  textDecoration: 'none', position: 'relative',
-                  boxShadow: `0 0 40px rgba(232,84,25,0.55), 0 0 80px rgba(232,84,25,0.2)`,
-                  transition: 'opacity 150ms',
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
-              >
-                <Brackets color="#000" size={10} />
-                <Shield size={16} />
-                START USING IT NOW
-                <ArrowRight size={16} />
-              </Link>
-              <div style={{ marginTop: 24, fontSize: 10, color: '#4a4a4a', letterSpacing: '0.18em' }}>
-                NO SETUP REQUIRED — PLATFORM READY
+          {/* ══════════ CTA ══════════ */}
+          <section style={{ background: BG, padding: '80px 28px 100px', borderTop: `1px solid ${BDIM}`, textAlign: 'center', transition: 'background 300ms' }}>
+            <div style={{ maxWidth: 680, margin: '0 auto', position: 'relative' }}>
+              <Brackets size={20} />
+              <div style={{ padding: '60px 40px' }}>
+                <div style={{ fontSize: 10, color: R, letterSpacing: '0.3em', marginBottom: 16 }}>
+                  ▶ SKYFALL_CTI — THREAT_INTELLIGENCE_COMMAND_CENTER
+                </div>
+                <h2 style={{ fontSize: 'clamp(1.8rem, 5vw, 3.2rem)', fontWeight: 900, letterSpacing: '0.06em', color: TXT, marginBottom: 18, lineHeight: 1.15 }}>
+                  READY TO<br />
+                  <span style={{ color: R }}>ENTER THE PLATFORM?</span>
+                </h2>
+                <p style={{ fontSize: 13, color: MUT, lineHeight: 1.8, marginBottom: 40, maxWidth: 480, margin: '0 auto 40px' }}>
+                  All modules are operational — IOC Analysis Engine, AI CTI Assistant, Graph Console, and Analytics Dashboards. Start investigating threats now.
+                </p>
+                <Link href="/enter"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 12,
+                    padding: '18px 52px', background: R, color: '#000',
+                    fontSize: 14, fontWeight: 900, letterSpacing: '0.28em',
+                    textDecoration: 'none', position: 'relative',
+                    boxShadow: `0 0 40px ${R}80, 0 0 80px ${R}30`,
+                    transition: 'opacity 150ms',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
+                >
+                  <Brackets color="#000" size={10} />
+                  <Shield size={16} />
+                  START USING IT NOW
+                  <ArrowRight size={16} />
+                </Link>
+                <div style={{ marginTop: 24, fontSize: 10, color: DIM, letterSpacing: '0.18em' }}>
+                  NO SETUP REQUIRED — PLATFORM READY
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ══════════ COLLABORATION ══════════ */}
-        <section style={{ background: BG, padding: '40px 28px', borderTop: '1px solid #1a1a1a' }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
-            <div style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.28em' }}>DEVELOPED IN COLLABORATION WITH</div>
-            <a href="https://nologin.es/en/" target="_blank" rel="noopener noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 14, padding: '14px 28px', border: `1px solid ${RD}`, textDecoration: 'none', position: 'relative', transition: 'all 200ms' }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = R; el.style.background = SRF }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = RD; el.style.background = 'transparent' }}
-            >
-              <Brackets color={R} size={8} />
-              <NologinLogo height={50} />
-              <ExternalLink size={10} color={R} />
-            </a>
-          </div>
-        </section>
-
-        {/* ══════════ FOOTER ══════════ */}
-        <footer style={{ borderTop: '1px solid #1a1a1a', padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 2, height: 20, background: R }} />
-            <Shield size={13} color={R} />
-            <span style={{ fontSize: 11, letterSpacing: '0.28em', color: TXT }}>
-              SKYFALL<span style={{ color: R }}>_</span>CTI
-            </span>
-            <span style={{ fontSize: 9, color: '#4a4a4a', letterSpacing: '0.12em', marginLeft: 8 }}>
-              © 2026 — ALL RIGHTS RESERVED
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: 20, fontSize: 9, color: '#4a4a4a', letterSpacing: '0.15em' }}>
-            {[
-              { icon: GitBranch,    label: 'GITHUB' },
-              { icon: ExternalLink, label: 'DOCS'   },
-              { icon: Layers,       label: 'API'    },
-              { icon: Terminal,     label: 'CLI'    },
-            ].map(({ icon: Icon, label }) => (
-              <a key={label} href="#" style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#4a4a4a', textDecoration: 'none', transition: 'color 150ms' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = R }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#4a4a4a' }}
+          {/* ══════════ COLLABORATION ══════════ */}
+          <section style={{ background: BG, padding: '40px 28px', borderTop: `1px solid ${BDIM}`, transition: 'background 300ms' }}>
+            <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
+              <div style={{ fontSize: 9, color: DIM, letterSpacing: '0.28em' }}>DEVELOPED IN COLLABORATION WITH</div>
+              <a href="https://nologin.es/en/" target="_blank" rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 14, padding: '14px 28px', border: `1px solid ${RD}`, textDecoration: 'none', position: 'relative', transition: 'all 200ms' }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = R; el.style.background = SRF }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = RD; el.style.background = 'transparent' }}
               >
-                <Icon size={9} /> {label}
+                <Brackets size={8} />
+                <NologinLogo height={50} />
+                <ExternalLink size={10} color={R} />
               </a>
-            ))}
-          </div>
-        </footer>
+            </div>
+          </section>
 
-      </div>
-    </>
+          {/* ══════════ FOOTER ══════════ */}
+          <footer style={{ borderTop: `1px solid ${BDIM}`, padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, background: BG, transition: 'background 300ms' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 2, height: 20, background: R }} />
+              <Shield size={13} color={R} />
+              <span style={{ fontSize: 11, letterSpacing: '0.28em', color: TXT }}>
+                SKYFALL<span style={{ color: R }}>_</span>CTI
+              </span>
+              <span style={{ fontSize: 9, color: DIM, letterSpacing: '0.12em', marginLeft: 8 }}>
+                © 2026 — ALL RIGHTS RESERVED
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 20, fontSize: 9, color: DIM, letterSpacing: '0.15em' }}>
+              {[
+                { icon: GitBranch,    label: 'GITHUB' },
+                { icon: ExternalLink, label: 'DOCS'   },
+                { icon: Layers,       label: 'API'    },
+                { icon: Terminal,     label: 'CLI'    },
+              ].map(({ icon: Icon, label }) => (
+                <a key={label} href="#" style={{ display: 'flex', alignItems: 'center', gap: 4, color: DIM, textDecoration: 'none', transition: 'color 150ms' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = R }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = DIM }}
+                >
+                  <Icon size={9} /> {label}
+                </a>
+              ))}
+            </div>
+          </footer>
+
+        </div>
+      </>
+    </LCtx.Provider>
   )
 }
