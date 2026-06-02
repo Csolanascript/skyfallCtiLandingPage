@@ -98,13 +98,12 @@ export default function EntityCard({
   }, [entity, onCardClick]);
 
   const handleStartEdge = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
     if (!cardRef.current) return;
     onStartEdge(entity.uid, { x: entity.x + CARD_W, y: entity.y + CARD_H / 2 });
     gsap.to(cardRef.current, { boxShadow: `0 0 18px ${color}88`, duration: 0.2 });
     setTimeout(() => {
       if (cardRef.current) gsap.to(cardRef.current, { boxShadow: "none", duration: 0.3 });
-    }, 1000);
+    }, 800);
   }, [entity, color, onStartEdge]);
 
   const pendingStyle: React.CSSProperties = isPendingTarget ? {
@@ -115,6 +114,7 @@ export default function EntityCard({
   return (
     <div
       ref={cardRef}
+      data-entity-uid={entity.uid}
       onMouseDown={handleMouseDown}
       onClick={handleCardClick}
       style={{
@@ -131,78 +131,80 @@ export default function EntityCard({
       aria-label={`Entity: ${displayName}`}
     >
       {/* Bracket corners */}
-      <div style={{ position: "absolute", top: -1, left: -1, width: 7, height: 7, borderTop: `2px solid ${color}`, borderLeft: `2px solid ${color}` }} />
-      <div style={{ position: "absolute", top: -1, right: -1, width: 7, height: 7, borderTop: `2px solid ${color}`, borderRight: `2px solid ${color}` }} />
-      <div style={{ position: "absolute", bottom: -1, left: -1, width: 7, height: 7, borderBottom: `2px solid ${color}`, borderLeft: `2px solid ${color}` }} />
-      <div style={{ position: "absolute", bottom: -1, right: -1, width: 7, height: 7, borderBottom: `2px solid ${color}`, borderRight: `2px solid ${color}` }} />
+      <div style={{ position: "absolute", top: -1, left: -1, width: 9, height: 9, borderTop: `2px solid ${color}`, borderLeft: `2px solid ${color}` }} />
+      <div style={{ position: "absolute", top: -1, right: -1, width: 9, height: 9, borderTop: `2px solid ${color}`, borderRight: `2px solid ${color}` }} />
+      <div style={{ position: "absolute", bottom: -1, left: -1, width: 9, height: 9, borderBottom: `2px solid ${color}`, borderLeft: `2px solid ${color}` }} />
+      <div style={{ position: "absolute", bottom: -1, right: -1, width: 9, height: 9, borderBottom: `2px solid ${color}`, borderRight: `2px solid ${color}` }} />
 
       {/* Content */}
-      <div style={{ padding: "8px 10px", display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between", boxSizing: "border-box" }}>
+      <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between", boxSizing: "border-box" }}>
         {/* Top row: icon + type label + action buttons */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <IconComp size={18} color={color} strokeWidth={1.5} />
-          <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.16em", color, flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <IconComp size={22} color={color} strokeWidth={1.5} />
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color, flex: 1 }}>
             {entity.label.toUpperCase()}
           </span>
           {/* Context (relations) */}
           <button
             data-no-drag
             onClick={(e) => { e.stopPropagation(); onContextClick(entity.uid); }}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: C.muted, opacity: 0.6, lineHeight: 1 }}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.muted, opacity: 0.6, lineHeight: 1 }}
             aria-label="View Neo4j relations"
             title="Neo4j relations"
           >
-            <Network size={11} />
+            <Network size={13} />
           </button>
           {/* Edit */}
           <button
             data-no-drag
             onClick={(e) => { e.stopPropagation(); openEditor(entity.uid); }}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: C.muted, opacity: 0.6, lineHeight: 1 }}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: C.muted, opacity: 0.6, lineHeight: 1 }}
             aria-label="Edit entity"
           >
-            <Pencil size={11} />
+            <Pencil size={13} />
           </button>
           {/* Delete */}
           <button
             data-no-drag
             onClick={(e) => { e.stopPropagation(); removeEntity(entity.uid); }}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: "#FF4444", opacity: 0.6, lineHeight: 1 }}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 3, color: "#FF4444", opacity: 0.6, lineHeight: 1 }}
             aria-label="Remove entity"
           >
-            <X size={11} />
+            <X size={13} />
           </button>
         </div>
 
         {/* Name line */}
-        <div style={{ fontSize: 10, color: C.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: CARD_W - 20, fontWeight: 500 }}>
+        <div style={{ fontSize: 13, color: C.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: CARD_W - 28, fontWeight: 500 }}>
           {displayName}
         </div>
 
         {/* Sub-line: T-ID / country / value */}
         {subLine && (
-          <div style={{ fontSize: 8, color, opacity: 0.8, letterSpacing: "0.1em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div style={{ fontSize: 10, color, opacity: 0.8, letterSpacing: "0.1em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {subLine}
           </div>
         )}
       </div>
 
-      {/* Edge handle */}
+      {/* Edge handle — drag to connect */}
       <button
         data-no-drag
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={handleStartEdge}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          handleStartEdge(e);
+        }}
         style={{
-          position: "absolute", right: -10, top: "50%", transform: "translateY(-50%)",
-          width: 20, height: 20, borderRadius: "50%",
+          position: "absolute", right: -12, top: "50%", transform: "translateY(-50%)",
+          width: 24, height: 24, borderRadius: "50%",
           background: C.bg, border: `2px solid ${color}`,
           cursor: "crosshair",
           display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
         }}
-        aria-label="Connect to another entity"
+        aria-label="Drag to connect"
         title="Drag to connect"
       >
-        <MoveRight size={9} color={color} />
+        <MoveRight size={11} color={color} />
       </button>
     </div>
   );

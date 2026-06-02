@@ -33,8 +33,8 @@ interface Props {
   onCancel: () => void;
 }
 
-const RADIUS   = 130;   // px from center to item
-const ITEM_SIZE = 68;   // px width/height of each item
+const RADIUS   = 158;   // px from center to item
+const ITEM_SIZE = 84;   // px width/height of each item
 
 /** Returns RadialItem list for a given source STIX type */
 export function getRadialItems(srcType: string): RadialItem[] {
@@ -124,8 +124,8 @@ export default function RadialNodeMenu({ srcType, x, y, C, onSelect, onCancel }:
       {/* Center dot */}
       <div style={{
         position: "absolute",
-        left: x - 6, top: y - 6,
-        width: 12, height: 12,
+        left: x - 8, top: y - 8,
+        width: 16, height: 16,
         borderRadius: "50%",
         background: C.red,
         boxShadow: `0 0 12px ${C.red}`,
@@ -174,13 +174,13 @@ export default function RadialNodeMenu({ srcType, x, y, C, onSelect, onCancel }:
               { bottom:-1,left:-1, borderBottom: `1px solid ${item.color}`, borderLeft:  `1px solid ${item.color}` },
               { bottom:-1,right:-1,borderBottom: `1px solid ${item.color}`, borderRight: `1px solid ${item.color}` },
             ].map((s, i) => (
-              <div key={i} style={{ position: "absolute", width: 6, height: 6, ...s }} />
+              <div key={i} style={{ position: "absolute", width: 8, height: 8, ...s }} />
             ))}
 
-            <Icon size={22} color={item.color} strokeWidth={1.5} />
+            <Icon size={28} color={item.color} strokeWidth={1.5} />
 
             <span style={{
-              fontSize: 7, fontWeight: 700, letterSpacing: "0.12em",
+              fontSize: 9, fontWeight: 700, letterSpacing: "0.12em",
               color: item.color, textAlign: "center", lineHeight: 1.1,
             }}>
               {item.label.toUpperCase().replace(" ", "\n")}
@@ -188,12 +188,12 @@ export default function RadialNodeMenu({ srcType, x, y, C, onSelect, onCancel }:
 
             {/* Relationship badge */}
             <span style={{
-              position: "absolute", bottom: -18, left: "50%", transform: "translateX(-50%)",
-              fontSize: 6.5, letterSpacing: "0.08em",
+              position: "absolute", bottom: -20, left: "50%", transform: "translateX(-50%)",
+              fontSize: 8, letterSpacing: "0.08em",
               color: C.muted, opacity: 0.75,
               whiteSpace: "nowrap",
               background: "#050505",
-              padding: "1px 4px",
+              padding: "1px 5px",
               border: `1px solid ${C.border}44`,
             }}>
               {item.relType}

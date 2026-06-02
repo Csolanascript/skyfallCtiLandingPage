@@ -7,10 +7,11 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useTheme, type ColorSet, DARK } from "@/lib/theme";
 import type { CanvasEntity, CanvasRelationship } from "@/lib/stix-types";
-import { Download } from "lucide-react";
 import PaletteGrid from "./PaletteGrid";
 import BundleCanvas from "./BundleCanvas";
 import EntityFormModal from "./EntityFormModal";
+import InferenceTheater from "./InferenceTheater";
+import ForgeAuth from "./ForgeAuth";
 import NodeContextPanel from "./NodeContextPanel";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 
@@ -74,8 +75,13 @@ function buildBundle(entities: CanvasEntity[], relationships: CanvasRelationship
   const now = new Date().toISOString();
   const objects: Record<string, unknown>[] = [];
 
+  // First pass: assign a stable STIX ID to each entity and record it by uid.
+  // Using a separate map avoids generating a second UUID in the relationship pass
+  // (which would produce source_ref/target_ref that don't exist in the bundle).
+  const idByUid: Record<string, string> = {};
   for (const e of entities) {
     const stixId = e.stixId || `${e.type}--${crypto.randomUUID()}`;
+    idByUid[e.uid] = stixId;
     const base: Record<string, unknown> = {
       type:               e.type,
       id:                 stixId,
@@ -84,19 +90,15 @@ function buildBundle(entities: CanvasEntity[], relationships: CanvasRelationship
       modified:           e.data.modified ?? now,
       ...e.data,
     };
-    // Ensure spec_version is never overwritten by e.data
     base.spec_version = "2.1";
     objects.push(base);
   }
 
-  const entityByUid = Object.fromEntries(entities.map((e) => [e.uid, e]));
-
+  // Second pass: build SROs using the IDs collected above — no new UUIDs.
   for (const r of relationships) {
-    const src = entityByUid[r.sourceUid];
-    const tgt = entityByUid[r.targetUid];
-    if (!src || !tgt) continue;
-    const srcId = src.stixId || `${src.type}--${crypto.randomUUID()}`;
-    const tgtId = tgt.stixId || `${tgt.type}--${crypto.randomUUID()}`;
+    const srcId = idByUid[r.sourceUid];
+    const tgtId = idByUid[r.targetUid];
+    if (!srcId || !tgtId) continue;
     objects.push({
       type:              "relationship",
       id:                r.stixId || `relationship--${crypto.randomUUID()}`,
@@ -129,7 +131,19 @@ export default function ForgeLayout() {
   const [editorUid,     setEditorUid]     = useState<string | null>(null);
   const [editorType,    setEditorType]    = useState<string | undefined>();
   const [contextUid,    setContextUid]    = useState<string | null>(null);
-  const [downloaded, setDownloaded] = useState(false);
+  const [showTheater,   setShowTheater]   = useState(false);
+  const [buildBundle_,  setBuildBundle]   = useState<Record<string, unknown> | null>(null);
+  const [validating,    setValidating]    = useState(false);
+  const [validResult,   setValidResult]   = useState<{ ok: boolean; msg: string } | null>(null);
+  const [hasToken,      setHasToken]      = useState(false);
+
+  // Check token on mount
+  useEffect(() => {
+    const envToken = process.env.NEXT_PUBLIC_FORGE_TOKEN ?? "";
+    if (envToken) { setHasToken(true); return; }
+    const saved = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("forge-token") : null;
+    setHasToken(!!saved);
+  }, []);
 
   // ── Entry animation
   useGSAP(() => {
@@ -165,20 +179,74 @@ export default function ForgeLayout() {
     setContextUid(uid);
   }, []);
 
-  // ── Download bundle as JSON
-  const handleDownload = useCallback(() => {
+  // ── Token helper (same logic as InferenceTheater)
+  const getToken = useCallback((): string => {
+    return (
+      (process.env.NEXT_PUBLIC_FORGE_TOKEN ?? "") ||
+      (typeof sessionStorage !== "undefined" ? sessionStorage.getItem("forge-token") : null) ||
+      ""
+    );
+  }, []);
+
+  // ── Validate
+  const handleValidate = useCallback(async () => {
+    if (entities.length === 0) {
+      setValidResult({ ok: false, msg: "Canvas is empty" });
+      return;
+    }
+    setValidating(true);
+    setValidResult(null);
+    try {
+      const bundle = buildBundle(entities, relationships);
+      const res = await fetch("/api/stix/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Forge-Token": getToken() },
+        body: JSON.stringify({ bundle }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setValidResult({ ok: true, msg: `${data.object_count} objects valid` });
+      } else {
+        setValidResult({ ok: false, msg: (data.errors ?? []).join(" · ").slice(0, 200) });
+      }
+    } catch (e) {
+      setValidResult({ ok: false, msg: String(e) });
+    } finally {
+      setValidating(false);
+    }
+  }, [entities, relationships, getToken]);
+
+  // ── Build — validates first; blocks if invalid
+  const handleBuild = useCallback(async () => {
     if (entities.length === 0) return;
     const bundle = buildBundle(entities, relationships);
-    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
-    a.download = `stix-bundle-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setDownloaded(true);
-    setTimeout(() => setDownloaded(false), 2000);
-  }, [entities, relationships]);
+
+    setValidating(true);
+    setValidResult(null);
+    try {
+      const res  = await fetch("/api/stix/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Forge-Token": getToken() },
+        body: JSON.stringify({ bundle }),
+      });
+      const data = await res.json();
+      if (!data.valid) {
+        const msg = (data.errors as string[] | undefined ?? []).join(" · ").slice(0, 300) || "Validation failed";
+        setValidResult({ ok: false, msg });
+        return;             // ← blocked: don't open theater
+      }
+      setValidResult({ ok: true, msg: `${data.object_count} objects valid` });
+    } catch (e) {
+      setValidResult({ ok: false, msg: `Validation error: ${String(e)}` });
+      return;
+    } finally {
+      setValidating(false);
+    }
+
+    // Validation passed — open InferenceTheater
+    setBuildBundle(bundle);
+    setShowTheater(true);
+  }, [entities, relationships, getToken]);
 
   const nodeCount = entities.length;
   const relCount  = relationships.length;
@@ -203,35 +271,45 @@ export default function ForgeLayout() {
         {/* ── Header ── */}
         <div ref={headerRef} style={{
           opacity: 0, borderBottom: `1px solid ${C.border}`,
-          padding: "10px 20px", display: "flex", alignItems: "center",
-          justifyContent: "space-between", gap: 12, flexShrink: 0,
+          padding: "12px 24px", display: "flex", alignItems: "center",
+          justifyContent: "space-between", gap: 14, flexShrink: 0,
           position: "relative",
         }}>
-          <Brackets size={8} />
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <Brackets size={10} />
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
             <Breadcrumb />
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.25em", color: C.red }}>
+            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.25em", color: C.red }}>
               ▶ STIX FORGE
             </span>
-            <span style={{ fontSize: 9, color: C.muted, letterSpacing: "0.1em" }}>
+            <span style={{ fontSize: 11, color: C.muted, letterSpacing: "0.1em" }}>
               {nodeCount} ENTITIES · {relCount} RELATIONS
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {downloaded && (
-              <span style={{ fontSize: 9, letterSpacing: "0.1em", color: C.green }}>
-                ✓ BUNDLE DOWNLOADED
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {validResult && (
+              <span style={{
+                fontSize: 11, letterSpacing: "0.1em",
+                color: validResult.ok ? C.green : "#FF4444",
+                maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {validResult.ok ? "✓" : "✗"} {validResult.msg}
               </span>
             )}
             <ActionButton
-              label="DOWNLOAD BUNDLE"
-              onClick={handleDownload}
-              disabled={nodeCount === 0}
+              label={validating ? "VALIDATING…" : "VALIDATE"}
+              onClick={handleValidate}
+              disabled={validating || nodeCount === 0}
+              color={C.border}
+              textColor={C.muted}
+            />
+            <ActionButton
+              label={validating ? "VALIDATING…" : "BUILD"}
+              onClick={handleBuild}
+              disabled={nodeCount === 0 || !hasToken || validating}
               color={C.red}
               textColor={C.white}
               hot
-              icon={<Download size={11} />}
             />
           </div>
         </div>
@@ -240,8 +318,8 @@ export default function ForgeLayout() {
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
           {/* Left: Palette */}
           <div style={{
-            width: 248, flexShrink: 0, borderRight: `1px solid ${C.border}`,
-            overflowY: "auto", padding: "12px 8px",
+            width: 290, flexShrink: 0, borderRight: `1px solid ${C.border}`,
+            overflowY: "auto", padding: "16px 10px",
           }}>
             <PaletteGrid />
           </div>
@@ -268,6 +346,15 @@ export default function ForgeLayout() {
             onClose={() => { setEditorUid(null); setEditorType(undefined); }}
           />
         )}
+        {showTheater && buildBundle_ && (
+          <InferenceTheater
+            bundle={buildBundle_}
+            onClose={() => { setShowTheater(false); setBuildBundle(null); }}
+          />
+        )}
+        {!hasToken && (
+          <ForgeAuth onAuth={() => setHasToken(true)} />
+        )}
       </div>
     </ForgeCtx.Provider>
   );
@@ -275,10 +362,10 @@ export default function ForgeLayout() {
 
 // ─── ActionButton ─────────────────────────────────────────────────────────────
 function ActionButton({
-  label, onClick, disabled, color, textColor, hot = false, icon,
+  label, onClick, disabled, color, textColor, hot = false,
 }: {
   label: string; onClick: () => void; disabled?: boolean;
-  color: string; textColor: string; hot?: boolean; icon?: React.ReactNode;
+  color: string; textColor: string; hot?: boolean;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
 
@@ -298,23 +385,22 @@ function ActionButton({
       disabled={disabled}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
-      aria-label={label}
       style={{
         border: `1px solid ${color}`,
         background: hot ? `${color}22` : "transparent",
         color: disabled ? "rgba(255,255,255,0.3)" : textColor,
         fontFamily: "inherit",
-        fontSize: 9,
+        fontSize: 11,
         fontWeight: 700,
         letterSpacing: "0.18em",
-        padding: "5px 14px",
+        padding: "6px 18px",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.5 : 0.85,
         transition: "opacity 0.15s",
-        display: "flex", alignItems: "center", gap: 6,
       }}
+      aria-label={label}
     >
-      {icon}{label}
+      {label}
     </button>
   );
 }

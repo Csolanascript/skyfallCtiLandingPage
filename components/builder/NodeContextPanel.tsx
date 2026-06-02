@@ -59,10 +59,10 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
   const IconComp  = ICON_MAP[typeEntry?.icon ?? "Target"] ?? Target;
 
   const [neighbors,   setNeighbors]   = useState<NeighborRow[]>([]);
-  const [loading] = useState(false);
+  const [loading,     setLoading]     = useState(false);
   const [addQuery,    setAddQuery]    = useState("");
   const [addResults,  setAddResults]  = useState<Array<{ id: string; name: string; type: string; external_id?: string }>>([]);
-  const [addSearching] = useState(false);
+  const [addSearching, setAddSearching] = useState(false);
   const [selectedNeighbor, setSelectedNeighbor] = useState<{ id: string; name: string; type: string } | null>(null);
   const [selectedRelType,  setSelectedRelType]  = useState("related-to");
   const debounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -73,47 +73,40 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
     gsap.fromTo(panelRef.current, { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" });
   }, { scope: panelRef });
 
-  // No backend — neighbors come from canvas relationships only
+  // Fetch existing Neo4j neighbors
   useEffect(() => {
-    const canvasNeighbors: NeighborRow[] = relationships
-      .filter(r => {
-        const srcE = entities.find(e => e.uid === r.sourceUid);
-        const tgtE = entities.find(e => e.uid === r.targetUid);
-        return srcE?.uid === entityUid || tgtE?.uid === entityUid;
-      })
-      .map(r => {
-        const isOut = entities.find(e => e.uid === r.sourceUid)?.uid === entityUid;
-        const neighbor = entities.find(e => e.uid === (isOut ? r.targetUid : r.sourceUid));
-        return {
-          rel_type:      r.relationshipType,
-          direction:     (isOut ? "out" : "in") as "out" | "in",
-          neighbor_id:   neighbor?.uid ?? "",
-          neighbor_name: neighbor?.name ?? neighbor?.label ?? "—",
-          neighbor_type: neighbor?.type ?? "indicator",
-          external_id:   null,
-          confidence:    r.confidence ?? 0,
-          correlation:   "canvas",
-        };
-      });
-    setNeighbors(canvasNeighbors);
-  }, [entityUid, entities, relationships]);
+    if (!entity?.stixId) return;
+    setLoading(true);
+    fetch(`/api/stix/neighbors/${encodeURIComponent(entity.stixId)}`)
+      .then((r) => r.json())
+      .then((d) => setNeighbors(d.neighbors ?? []))
+      .catch(() => setNeighbors([]))
+      .finally(() => setLoading(false));
+  }, [entity?.stixId]);
 
-  // Search canvas entities to connect
-  const searchEntities = useCallback((q: string) => {
-    const lower = q.toLowerCase();
-    const hits = entities
-      .filter(e => e.uid !== entityUid)
-      .filter(e => !lower || (e.name ?? e.label).toLowerCase().includes(lower))
-      .slice(0, 15)
-      .map(e => ({ id: e.uid, name: e.name ?? e.label, type: e.type }));
-    setAddResults(hits);
-  }, [entities, entityUid]);
+  // Search for entities to connect
+  const searchEntities = useCallback(async (q: string) => {
+    setAddSearching(true);
+    try {
+      const res  = await fetch(`/api/stix/catalog?q=${encodeURIComponent(q)}&limit=15`);
+      const data = await res.json();
+      setAddResults(data.results ?? []);
+    } catch {
+      setAddResults([]);
+    } finally {
+      setAddSearching(false);
+    }
+  }, []);
 
   const handleAddQueryChange = (q: string) => {
     setAddQuery(q);
     setSelectedNeighbor(null);
     clearTimeout(debounce.current);
-    debounce.current = setTimeout(() => searchEntities(q), 120);
+    if (q.length >= 2) {
+      debounce.current = setTimeout(() => searchEntities(q), 250);
+    } else {
+      setAddResults([]);
+    }
   };
 
   // Update rel type suggestions when neighbor type changes
@@ -210,15 +203,15 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
 
   const INPUT: React.CSSProperties = {
     background: C.bg, border: `1px solid ${C.border}`,
-    color: C.white, fontFamily: C.mono, fontSize: 9,
-    padding: "5px 8px", outline: "none", width: "100%", boxSizing: "border-box",
+    color: C.white, fontFamily: C.mono, fontSize: 11,
+    padding: "6px 10px", outline: "none", width: "100%", boxSizing: "border-box",
   };
 
   return (
     <div
       ref={panelRef}
       style={{
-        width: 300, height: "100%", overflowY: "auto",
+        width: 360, height: "100%", overflowY: "auto",
         borderLeft: `1px solid ${color}44`,
         background: "#030303",
         display: "flex", flexDirection: "column",
@@ -227,15 +220,15 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
     >
       {/* Header */}
       <div style={{
-        padding: "12px 14px", borderBottom: `1px solid ${C.border}33`,
-        display: "flex", alignItems: "center", gap: 8, flexShrink: 0,
+        padding: "16px 18px", borderBottom: `1px solid ${C.border}33`,
+        display: "flex", alignItems: "center", gap: 10, flexShrink: 0,
       }}>
-        <IconComp size={16} color={color} strokeWidth={1.5} />
+        <IconComp size={19} color={color} strokeWidth={1.5} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 8, letterSpacing: "0.14em", color, fontWeight: 700 }}>
+          <div style={{ fontSize: 10, letterSpacing: "0.14em", color, fontWeight: 700 }}>
             {entity.label.toUpperCase()}
           </div>
-          <div style={{ fontSize: 9, color: C.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div style={{ fontSize: 12, color: C.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {displayName}
           </div>
         </div>
@@ -244,20 +237,20 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
           style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, padding: 4, flexShrink: 0 }}
           aria-label="Close"
         >
-          <X size={13} />
+          <X size={16} />
         </button>
       </div>
 
       {/* Stix ID info */}
       {!entity.stixId && (
-        <div style={{ padding: "8px 14px", fontSize: 7, color: "#FFAA00", opacity: 0.8, letterSpacing: "0.1em", borderBottom: `1px solid ${C.border}22` }}>
+        <div style={{ padding: "10px 18px", fontSize: 9, color: "#FFAA00", opacity: 0.8, letterSpacing: "0.1em", borderBottom: `1px solid ${C.border}22` }}>
           ⚠ NOT IN NEO4J YET — BUILD FIRST TO SEE EXISTING RELATIONS
         </div>
       )}
 
       {/* ── Existing Neo4j connections ── */}
-      <div style={{ padding: "10px 14px", flex: 1 }}>
-        <div style={{ fontSize: 7, letterSpacing: "0.18em", color: C.muted, opacity: 0.6, marginBottom: 8 }}>
+      <div style={{ padding: "12px 18px", flex: 1 }}>
+        <div style={{ fontSize: 9, letterSpacing: "0.18em", color: C.muted, opacity: 0.6, marginBottom: 10 }}>
           ▶ NEO4J CONNECTIONS
           {neighbors.length > 0 && (
             <span style={{ marginLeft: 8, color: C.green }}>{neighbors.length}</span>
@@ -265,17 +258,17 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
         </div>
 
         {loading && (
-          <div style={{ fontSize: 8, color: C.muted, opacity: 0.5 }}>LOADING…</div>
+          <div style={{ fontSize: 10, color: C.muted, opacity: 0.5 }}>LOADING…</div>
         )}
 
         {!loading && !entity.stixId && (
-          <div style={{ fontSize: 8, color: C.muted, opacity: 0.4, letterSpacing: "0.1em" }}>
+          <div style={{ fontSize: 10, color: C.muted, opacity: 0.4, letterSpacing: "0.1em" }}>
             No Neo4j ID
           </div>
         )}
 
         {!loading && entity.stixId && neighbors.length === 0 && (
-          <div style={{ fontSize: 8, color: C.muted, opacity: 0.4, letterSpacing: "0.1em" }}>
+          <div style={{ fontSize: 10, color: C.muted, opacity: 0.4, letterSpacing: "0.1em" }}>
             No connections found
           </div>
         )}
@@ -294,21 +287,21 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
               {/* Direction arrow */}
               <div style={{ paddingTop: 2, flexShrink: 0 }}>
                 {n.direction === "out"
-                  ? <ArrowRight size={10} color={color} />
-                  : <ArrowLeft  size={10} color={C.muted} />}
+                  ? <ArrowRight size={13} color={color} />
+                  : <ArrowLeft  size={13} color={C.muted} />}
               </div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 {/* rel_type */}
-                <div style={{ fontSize: 7, color: C.orange, letterSpacing: "0.1em", opacity: 0.85 }}>
+                <div style={{ fontSize: 9, color: C.orange, letterSpacing: "0.1em", opacity: 0.85 }}>
                   {n.rel_type.replace(/_/g, "-").toLowerCase()}
                 </div>
                 {/* neighbor name + type */}
-                <div style={{ fontSize: 8.5, color: nColor || C.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div style={{ fontSize: 11, color: nColor || C.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {n.external_id ? `[${n.external_id}] ` : ""}
                   {n.neighbor_name.slice(0, 36)}
                 </div>
-                <div style={{ fontSize: 7, color: C.muted, opacity: 0.5 }}>
+                <div style={{ fontSize: 9, color: C.muted, opacity: 0.5 }}>
                   {n.neighbor_type}
                   {n.correlation && ` · ${n.correlation.split("_")[0]}`}
                 </div>
@@ -322,8 +315,8 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
                   background: "none",
                   border: `1px solid ${alreadyOnCanvas ? C.border : C.green}`,
                   color: alreadyOnCanvas ? C.muted : C.green,
-                  fontFamily: C.mono, fontSize: 7, letterSpacing: "0.1em",
-                  padding: "2px 6px", cursor: alreadyOnCanvas ? "default" : "pointer",
+                  fontFamily: C.mono, fontSize: 9, letterSpacing: "0.1em",
+                  padding: "3px 8px", cursor: alreadyOnCanvas ? "default" : "pointer",
                   flexShrink: 0, opacity: alreadyOnCanvas ? 0.4 : 1,
                   whiteSpace: "nowrap",
                 }}
@@ -336,8 +329,8 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
         })}
 
         {/* ── Add new relationship ── */}
-        <div style={{ marginTop: 14, paddingTop: 10, borderTop: `1px solid ${C.border}33` }}>
-          <div style={{ fontSize: 7, letterSpacing: "0.18em", color: C.muted, opacity: 0.6, marginBottom: 8 }}>
+        <div style={{ marginTop: 16, paddingTop: 12, borderTop: `1px solid ${C.border}33` }}>
+          <div style={{ fontSize: 9, letterSpacing: "0.18em", color: C.muted, opacity: 0.6, marginBottom: 10 }}>
             ▶ CONNECT TO ENTITY
           </div>
 
@@ -365,14 +358,14 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
                   onClick={() => { setSelectedNeighbor(r); setAddQuery(r.name); setAddResults([]); }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = C.rowHover)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                  style={{ padding: "5px 8px", cursor: "pointer", display: "flex", alignItems: "baseline", gap: 8 }}
+                  style={{ padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "baseline", gap: 8 }}
                   role="option"
                 >
                   {r.external_id && (
-                    <span style={{ fontSize: 7, color: "#9933FF", fontWeight: 700, flexShrink: 0 }}>{r.external_id}</span>
+                    <span style={{ fontSize: 9, color: "#9933FF", fontWeight: 700, flexShrink: 0 }}>{r.external_id}</span>
                   )}
-                  <span style={{ fontSize: 8.5, color: C.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{r.name}</span>
-                  <span style={{ fontSize: 7, color: C.muted, opacity: 0.5, flexShrink: 0 }}>{r.type}</span>
+                  <span style={{ fontSize: 11, color: C.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{r.name}</span>
+                  <span style={{ fontSize: 9, color: C.muted, opacity: 0.5, flexShrink: 0 }}>{r.type}</span>
                 </div>
               ))}
             </div>
@@ -380,8 +373,8 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
 
           {/* Selected + relationship type */}
           {selectedNeighbor && (
-            <div style={{ marginBottom: 8, padding: "6px 8px", border: `1px solid ${C.border}44`, background: "#0d0d0d" }}>
-              <div style={{ fontSize: 8, color: C.green, marginBottom: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <div style={{ marginBottom: 8, padding: "8px 10px", border: `1px solid ${C.border}44`, background: "#0d0d0d" }}>
+              <div style={{ fontSize: 10, color: C.green, marginBottom: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 → {selectedNeighbor.name}
               </div>
               <select
@@ -397,15 +390,15 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
               <div style={{ display: "flex", gap: 6 }}>
                 <button
                   onClick={() => { setSelectedNeighbor(null); setAddQuery(""); }}
-                  style={{ flex: 1, fontSize: 7, padding: "4px 0", border: `1px solid ${C.border}`, background: "transparent", color: C.muted, cursor: "pointer", fontFamily: C.mono }}
+                  style={{ flex: 1, fontSize: 9, padding: "5px 0", border: `1px solid ${C.border}`, background: "transparent", color: C.muted, cursor: "pointer", fontFamily: C.mono }}
                 >
                   CLEAR
                 </button>
                 <button
                   onClick={handleConnect}
-                  style={{ flex: 2, fontSize: 7, padding: "4px 0", border: `1px solid ${color}`, background: `${color}22`, color, cursor: "pointer", fontFamily: C.mono, fontWeight: 700 }}
+                  style={{ flex: 2, fontSize: 9, padding: "5px 0", border: `1px solid ${color}`, background: `${color}22`, color, cursor: "pointer", fontFamily: C.mono, fontWeight: 700 }}
                 >
-                  <PlusCircle size={9} style={{ display: "inline", marginRight: 4 }} />
+                  <PlusCircle size={11} style={{ display: "inline", marginRight: 4 }} />
                   CONNECT
                 </button>
               </div>
@@ -414,7 +407,7 @@ export default function NodeContextPanel({ entityUid, onClose }: Props) {
 
           {/* STIX relationship type hint */}
           {selectedNeighbor && (
-            <div style={{ fontSize: 7, color: C.muted, opacity: 0.4, letterSpacing: "0.08em" }}>
+            <div style={{ fontSize: 9, color: C.muted, opacity: 0.4, letterSpacing: "0.08em" }}>
               {entity.type} → {selectedRelType} → {STIX_TYPE_MAP[selectedNeighbor.type] ?? selectedNeighbor.type}
             </div>
           )}

@@ -62,12 +62,12 @@ export default function PaletteGrid() {
   return (
     <div ref={gridRef}>
       <div style={{
-        fontSize: 8, fontWeight: 700, letterSpacing: "0.22em",
-        color: C.red, marginBottom: 10, paddingLeft: 4,
+        fontSize: 10, fontWeight: 700, letterSpacing: "0.22em",
+        color: C.red, marginBottom: 12, paddingLeft: 4,
       }}>
         ▶ ENTITY TYPES
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         {STIX_TYPES.map((t) => {
           const Icon = ICON_MAP[t.icon] ?? Target;
           return (
@@ -83,12 +83,12 @@ export default function PaletteGrid() {
                 position: "relative",
                 border: `1px solid ${C.border}`,
                 background: C.surface,
-                padding: "10px 6px",
+                padding: "13px 8px",
                 cursor: "grab",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 6,
+                gap: 8,
                 userSelect: "none",
               }}
               role="button"
@@ -97,14 +97,14 @@ export default function PaletteGrid() {
               onKeyDown={(e) => e.key === "Enter" && handleClick(t.id)}
             >
               {/* Bracket corner */}
-              <div style={{ position: "absolute", top: -1, left: -1, width: 6, height: 6, borderTop: `1px solid ${t.color}`, borderLeft: `1px solid ${t.color}` }} />
-              <div style={{ position: "absolute", top: -1, right: -1, width: 6, height: 6, borderTop: `1px solid ${t.color}`, borderRight: `1px solid ${t.color}` }} />
-              <div style={{ position: "absolute", bottom: -1, left: -1, width: 6, height: 6, borderBottom: `1px solid ${t.color}`, borderLeft: `1px solid ${t.color}` }} />
-              <div style={{ position: "absolute", bottom: -1, right: -1, width: 6, height: 6, borderBottom: `1px solid ${t.color}`, borderRight: `1px solid ${t.color}` }} />
+              <div style={{ position: "absolute", top: -1, left: -1, width: 8, height: 8, borderTop: `1px solid ${t.color}`, borderLeft: `1px solid ${t.color}` }} />
+              <div style={{ position: "absolute", top: -1, right: -1, width: 8, height: 8, borderTop: `1px solid ${t.color}`, borderRight: `1px solid ${t.color}` }} />
+              <div style={{ position: "absolute", bottom: -1, left: -1, width: 8, height: 8, borderBottom: `1px solid ${t.color}`, borderLeft: `1px solid ${t.color}` }} />
+              <div style={{ position: "absolute", bottom: -1, right: -1, width: 8, height: 8, borderBottom: `1px solid ${t.color}`, borderRight: `1px solid ${t.color}` }} />
 
-              <Icon size={28} color={t.color} strokeWidth={1.5} />
+              <Icon size={34} color={t.color} strokeWidth={1.5} />
               <span style={{
-                fontSize: 7, fontWeight: 700, letterSpacing: "0.14em",
+                fontSize: 9, fontWeight: 700, letterSpacing: "0.14em",
                 color: C.muted, textAlign: "center", lineHeight: 1.2,
               }}>
                 {t.label.toUpperCase()}
@@ -114,7 +114,7 @@ export default function PaletteGrid() {
         })}
       </div>
       <div style={{
-        marginTop: 12, fontSize: 7, color: C.muted, opacity: 0.5,
+        marginTop: 14, fontSize: 9, color: C.muted, opacity: 0.5,
         textAlign: "center", letterSpacing: "0.1em",
       }}>
         CLICK OR DRAG TO CANVAS

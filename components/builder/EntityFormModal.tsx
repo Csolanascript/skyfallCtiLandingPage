@@ -51,7 +51,7 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
   );
   const [showOptional,    setShowOptional]    = useState(false);
   const [hashPairs,       setHashPairs]       = useState<{ algo: string; val: string }[]>([]);
-  const [loadingEntity] = useState(false);
+  const [loadingEntity,   setLoadingEntity]   = useState(false);
   const [selectedTechnique, setSelectedTechnique] = useState<TechniqueResult | null>(null);
 
   // Load existing entity data
@@ -62,8 +62,17 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
       if (hashes) {
         setHashPairs(Object.entries(hashes).map(([algo, val]) => ({ algo, val })));
       }
+      // If this entity was loaded from Neo4j, supplement with full server props
+      if (existing.stixId) {
+        setLoadingEntity(true);
+        fetch(`/api/stix/entity/${existing.stixId}`)
+          .then((r) => r.json())
+          .then((d) => setFormData((prev) => ({ ...d.properties, ...prev })))
+          .catch(() => {})
+          .finally(() => setLoadingEntity(false));
+      }
     }
-  }, [existing?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [existing?.uid, existing?.stixId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Entry animation
   useGSAP(() => {
@@ -124,8 +133,8 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
     border: `1px solid ${C.border}`,
     color: C.white,
     fontFamily: C.mono,
-    fontSize: 10,
-    padding: "5px 8px",
+    fontSize: 12,
+    padding: "6px 10px",
     outline: "none",
     width: "100%",
     boxSizing: "border-box",
@@ -170,7 +179,7 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
       const selected: string[] = Array.isArray(val) ? (val as string[]) : [];
       return (
         <div key={field} style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 8, letterSpacing: "0.12em", color: C.red, display: "block", marginBottom: 4 }}>
+          <label style={{ fontSize: 10, letterSpacing: "0.12em", color: C.red, display: "block", marginBottom: 5 }}>
             {field.replace(/_/g, " ").toUpperCase()}
             {required && <span style={{ color: "#FF4444", marginLeft: 4 }}>*</span>}
           </label>
@@ -185,7 +194,7 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
                     set(field, next);
                   }}
                   style={{
-                    fontSize: 7, letterSpacing: "0.1em", padding: "3px 7px",
+                    fontSize: 9, letterSpacing: "0.1em", padding: "4px 9px",
                     border: `1px solid ${active ? typeEntry.color : C.border}`,
                     background: active ? `${typeEntry.color}22` : "transparent",
                     color: active ? typeEntry.color : C.muted,
@@ -231,7 +240,7 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
     if (field.includes("_at") || field.includes("_seen") || field === "valid_from" || field === "valid_until" || field === "published") {
       return (
         <div key={field} style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 8, letterSpacing: "0.12em", color: C.red, display: "block", marginBottom: 4 }}>
+          <label style={{ fontSize: 10, letterSpacing: "0.12em", color: C.red, display: "block", marginBottom: 5 }}>
             {field.replace(/_/g, " ").toUpperCase()}
             {required && <span style={{ color: "#FF4444", marginLeft: 4 }}>*</span>}
           </label>
@@ -250,7 +259,7 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
     if (field === "confidence") {
       return (
         <div key={field} style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 8, letterSpacing: "0.12em", color: C.red, display: "block", marginBottom: 4 }}>
+          <label style={{ fontSize: 10, letterSpacing: "0.12em", color: C.red, display: "block", marginBottom: 5 }}>
             CONFIDENCE — {(val as number | undefined) ?? 70}
           </label>
           <input
@@ -268,7 +277,7 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
     if (field === "latitude" || field === "longitude") {
       return (
         <div key={field} style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 8, letterSpacing: "0.12em", color: C.red, display: "block", marginBottom: 4 }}>
+          <label style={{ fontSize: 10, letterSpacing: "0.12em", color: C.red, display: "block", marginBottom: 5 }}>
             {field.toUpperCase()}
           </label>
           <input
@@ -332,10 +341,10 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
       <div
         ref={panelRef}
         style={{
-          width: 360, height: "100%", overflowY: "auto",
+          width: 440, height: "100%", overflowY: "auto",
           background: C.bg,
           borderLeft: `1px solid ${color}55`,
-          padding: "16px 18px",
+          padding: "20px 22px",
           display: "flex", flexDirection: "column", gap: 0,
           position: "relative",
           fontFamily: C.mono,
@@ -345,8 +354,8 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 8, letterSpacing: "0.2em", color }}>▶ {typeEntry.label.toUpperCase()}</div>
-            <div style={{ fontSize: 7, color: C.muted, opacity: 0.6, marginTop: 2 }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.2em", color }}>▶ {typeEntry.label.toUpperCase()}</div>
+            <div style={{ fontSize: 9, color: C.muted, opacity: 0.6, marginTop: 3 }}>
               {uid ? "EDIT ENTITY" : "NEW ENTITY"}
             </div>
           </div>
@@ -355,12 +364,12 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
             style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, padding: 4 }}
             aria-label="Close"
           >
-            <X size={14} />
+            <X size={17} />
           </button>
         </div>
 
         {loadingEntity ? (
-          <div style={{ color: C.muted, fontSize: 9, opacity: 0.6 }}>LOADING…</div>
+          <div style={{ color: C.muted, fontSize: 11, opacity: 0.6 }}>LOADING…</div>
         ) : (
           <>
             {/* ── ATT&CK / CWE picker for technique type ── */}
@@ -389,7 +398,7 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
                   }}
                 />
                 <div style={{
-                  fontSize: 8, letterSpacing: "0.14em", color,
+                  fontSize: 10, letterSpacing: "0.14em", color,
                   opacity: 0.7, borderTop: `1px solid ${color}22`, paddingTop: 10,
                 }}>
                   FIELDS (auto-filled · editable)
@@ -473,20 +482,20 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
                       style={{ background: "none", border: "none", cursor: "pointer", color: "#FF4444", padding: 4 }}
                       aria-label="Remove hash"
                     >
-                      <Trash2 size={11} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 ))}
                 <button
                   onClick={() => setHashPairs([...hashPairs, { algo: "SHA-256", val: "" }])}
                   style={{
-                    fontSize: 7, padding: "3px 8px",
+                    fontSize: 9, padding: "4px 10px",
                     border: `1px solid ${C.border}`,
                     background: "transparent", color: C.muted,
                     cursor: "pointer", fontFamily: C.mono, display: "flex", alignItems: "center", gap: 4,
                   }}
                 >
-                  <Plus size={9} /> ADD HASH
+                  <Plus size={11} /> ADD HASH
                 </button>
               </div>
             )}
@@ -499,14 +508,14 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
                   style={{
                     background: "none", border: `1px solid ${C.border}`,
                     color: C.muted, fontFamily: C.mono, cursor: "pointer",
-                    fontSize: 8, letterSpacing: "0.14em",
-                    padding: "5px 10px", marginBottom: showOptional ? 12 : 0,
+                    fontSize: 10, letterSpacing: "0.14em",
+                    padding: "6px 12px", marginBottom: showOptional ? 12 : 0,
                     display: "flex", alignItems: "center", gap: 6,
                     width: "100%",
                   }}
                   aria-expanded={showOptional}
                 >
-                  {showOptional ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                  {showOptional ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                   OPTIONAL FIELDS ({typeEntry.optional.length})
                 </button>
                 {showOptional && typeEntry.optional.map((f) => renderField(f, false))}
@@ -520,7 +529,7 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
           <button
             onClick={handleClose}
             style={{
-              fontSize: 9, letterSpacing: "0.14em", padding: "6px 16px",
+              fontSize: 11, letterSpacing: "0.14em", padding: "8px 20px",
               border: `1px solid ${C.border}`, background: "transparent",
               color: C.muted, cursor: "pointer", fontFamily: C.mono,
             }}
@@ -530,7 +539,7 @@ export default function EntityFormModal({ uid, typeId, onClose }: Props) {
           <button
             onClick={handleSave}
             style={{
-              fontSize: 9, letterSpacing: "0.14em", padding: "6px 20px",
+              fontSize: 11, letterSpacing: "0.14em", padding: "8px 24px",
               border: `1px solid ${color}`,
               background: `${color}22`, color,
               cursor: "pointer", fontFamily: C.mono, fontWeight: 700,
