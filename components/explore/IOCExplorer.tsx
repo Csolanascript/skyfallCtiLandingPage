@@ -158,8 +158,8 @@ function RepBadge({ rep }: { rep: string | null }) {
     rep === "safe" || rep === "benign" ? C.green : C.muted;
   return (
     <span style={{
-      padding: "2px 7px", fontSize: 10, fontWeight: 700, letterSpacing: "0.10em",
-      border: `1px solid ${color}55`, color, background: `${color}18`, flexShrink: 0,
+      padding: "3px 8px", fontSize: 11, fontWeight: 700, letterSpacing: "0.10em",
+      border: `1px solid ${color}88`, color, background: `${color}22`, flexShrink: 0,
     }}>
       {rep.toUpperCase()}
     </span>
@@ -170,8 +170,9 @@ function TypePill({ label }: { label: string }) {
   const C = useC();
   return (
     <span style={{
-      padding: "2px 6px", fontSize: 9, letterSpacing: "0.06em",
-      border: `1px solid ${C.redDim}`, color: C.muted, whiteSpace: "nowrap",
+      padding: "2px 8px", fontSize: 10, letterSpacing: "0.06em",
+      border: `1px solid ${C.redDim}`, color: C.white, whiteSpace: "nowrap",
+      background: "rgba(232,84,25,0.06)",
     }}>
       {label.replace(/-/g, "‑")}
     </span>
@@ -182,11 +183,11 @@ function ConfBar({ value }: { value: number }) {
   const C = useC();
   const color = value >= 75 ? C.red : value >= 50 ? C.orange : C.muted;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 64 }}>
-      <div style={{ flex: 1, height: 3, background: C.border }}>
-        <div style={{ width: `${value}%`, height: "100%", background: color, transition: "width 300ms" }} />
+    <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 72 }}>
+      <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.12)", borderRadius: 2 }}>
+        <div style={{ width: `${value}%`, height: "100%", background: color, transition: "width 300ms", borderRadius: 2 }} />
       </div>
-      <span style={{ fontSize: 11, color, fontWeight: 700, minWidth: 24, textAlign: "right" }}>{value}</span>
+      <span style={{ fontSize: 12, color, fontWeight: 700, minWidth: 26, textAlign: "right" }}>{value}</span>
     </div>
   );
 }
@@ -195,10 +196,10 @@ function SectionTitle({ icon: Icon, label }: { icon?: React.ElementType; label: 
   const C = useC();
   return (
     <div style={{
-      fontSize: 8, fontWeight: 700, letterSpacing: "0.22em", color: C.red,
-      marginBottom: 10, display: "flex", alignItems: "center", gap: 6,
+      fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", color: C.red,
+      marginBottom: 12, display: "flex", alignItems: "center", gap: 6,
     }}>
-      {Icon && <Icon size={9} />}
+      {Icon && <Icon size={10} />}
       {label}
     </div>
   );
@@ -209,18 +210,53 @@ type HoverIdentity = { type: NodePreviewType; value: string };
 
 // ── IOC Row ───────────────────────────────────────────────────────────────────
 function IOCRow({
-  item, onOpenGraph, onHover, onHoverMove, onHoverEnd,
+  item, onOpenGraph, onHover, onHoverMove, onHoverEnd, compact = false,
 }: {
   item: IOCEntry;
   onOpenGraph: () => void;
   onHover: (value: string, x: number, y: number) => void;
   onHoverMove: (x: number, y: number) => void;
   onHoverEnd: () => void;
+  compact?: boolean;
 }) {
   const C = useC();
   const [hov, setHov] = useState(false);
   const tc    = threatColor(item.crowdsec_reputation, item.vt_malicious, C);
   const types = toArray(item.indicator_types);
+
+  if (compact) {
+    // Mobile compact row: IP + reputation badge + confidence in 2 lines
+    return (
+      <div
+        role="button" tabIndex={0}
+        onClick={onOpenGraph}
+        onKeyDown={(e) => e.key === "Enter" && onOpenGraph()}
+        onTouchStart={() => setHov(true)}
+        onTouchEnd={() => setHov(false)}
+        style={{
+          padding: "10px 12px", cursor: "pointer",
+          borderBottom: `1px solid ${C.border}`,
+          borderLeft: `3px solid ${tc}`,
+          background: hov ? C.rowHover : "transparent",
+          outline: "none",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: C.white, letterSpacing: "0.03em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>
+            {item.ip_value || "—"}
+          </span>
+          <RepBadge rep={item.crowdsec_reputation} />
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <span style={{ fontSize: 9, color: C.muted }}>{item.country_code || "??"}</span>
+          {item.vt_malicious > 0 && (
+            <span style={{ fontSize: 9, color: C.red, fontWeight: 700 }}>VT:{item.vt_malicious}</span>
+          )}
+          <span style={{ fontSize: 9, color: C.muted, marginLeft: "auto" }}>{formatDate(item.modified)}</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -241,50 +277,37 @@ function IOCRow({
         position: "relative",
       }}
     >
-      {/* Value */}
       <div style={{
         minWidth: 138, fontWeight: 700, fontSize: 13,
-        color: hov ? C.white : C.muted,
+        color: C.white,
         letterSpacing: "0.04em", flexShrink: 0,
         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
       }}>
         {item.ip_value || "—"}
       </div>
-
-      {/* Types */}
       <div style={{ flex: 1, display: "flex", gap: 3, flexWrap: "nowrap", overflow: "hidden", minWidth: 0 }}>
         {types.slice(0, 2).map((t, i) => <TypePill key={i} label={t} />)}
         {types.length > 2 && (
           <span style={{ fontSize: 9, color: C.muted }}>+{types.length - 2}</span>
         )}
       </div>
-
-      {/* Confidence */}
       <ConfBar value={item.confidence ?? 0} />
-
-      {/* VT */}
       <div style={{ minWidth: 42, flexShrink: 0, display: "flex", alignItems: "center", gap: 3 }}>
         {item.vt_malicious > 0 ? (
           <>
-            <span style={{ fontSize: 9, color: C.muted }}>VT</span>
-            <span style={{ fontSize: 12, color: C.red, fontWeight: 700 }}>{item.vt_malicious}</span>
+            <span style={{ fontSize: 10, color: C.muted }}>VT</span>
+            <span style={{ fontSize: 13, color: C.red, fontWeight: 700 }}>{item.vt_malicious}</span>
           </>
         ) : (
-          <span style={{ fontSize: 9, color: C.muted, opacity: 0.4 }}>—</span>
+          <span style={{ fontSize: 11, color: C.muted, opacity: 0.5 }}>—</span>
         )}
       </div>
-
-      {/* Reputation */}
-      <div style={{ minWidth: 76, flexShrink: 0 }}>
+      <div style={{ minWidth: 82, flexShrink: 0 }}>
         <RepBadge rep={item.crowdsec_reputation} />
       </div>
-
-      {/* Country */}
-      <div style={{ fontSize: 11, color: C.muted, flexShrink: 0, minWidth: 28, letterSpacing: "0.07em" }}>
+      <div style={{ fontSize: 12, color: C.white, flexShrink: 0, minWidth: 28, letterSpacing: "0.07em", fontWeight: 600 }}>
         {item.country_code || "??"}
       </div>
-
-      {/* Time */}
       <div style={{ fontSize: 10, color: C.muted, flexShrink: 0, minWidth: 80, textAlign: "right" }}>
         {formatDate(item.modified)}
       </div>
@@ -905,6 +928,15 @@ export default function IOCExplorer() {
   const [hoverIdentity, setHoverIdentity] = useState<HoverIdentity | null>(null);
   const [hoverPos,      setHoverPos]      = useState({ x: 0, y: 0 });
   const [showPreview,   setShowPreview]   = useState(false);
+  const [isMobile,      setIsMobile]      = useState(false);
+  const [mobilePanel,   setMobilePanel]   = useState<"feed" | "intel" | "recent">("feed");
+
+  useEffect(() => {
+    const calc = () => setIsMobile(window.innerWidth <= 768);
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
 
   // Read tab from URL on mount; update URL when tab changes
   useEffect(() => {
@@ -1001,23 +1033,23 @@ export default function IOCExplorer() {
 
       {/* ── Header ── */}
       <header style={{
-        borderBottom: `1px solid ${C.redDim}`, padding: "9px 24px 0",
+        borderBottom: `1px solid ${C.redDim}`, padding: isMobile ? "7px 12px 0" : "9px 24px 0",
         display: "flex", flexDirection: "column",
         background: C.surface, flexShrink: 0, zIndex: 100,
       }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 9 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: isMobile ? 7 : 9 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 8 : 14 }}>
             <div style={{ width: 3, height: 22, background: C.red, boxShadow: C.redGlow, flexShrink: 0 }} />
-            <NologinLogo height={26} />
-            <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.07)", flexShrink: 0 }} />
+            <NologinLogo height={isMobile ? 20 : 26} />
+            {!isMobile && <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.07)", flexShrink: 0 }} />}
             <div>
-              <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "0.38em" }}>SKYFALL_CTI</div>
-              <div style={{ fontSize: 11, color: C.muted, letterSpacing: "0.18em" }}>// IOC_INTELLIGENCE_EXPLORER</div>
+              <div style={{ fontSize: isMobile ? 11 : 14, fontWeight: 900, letterSpacing: isMobile ? "0.2em" : "0.38em" }}>SKYFALL_CTI</div>
+              {!isMobile && <div style={{ fontSize: 11, color: C.muted, letterSpacing: "0.18em" }}>// IOC_INTELLIGENCE_EXPLORER</div>}
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 10, color: C.muted }}>
-            <span style={{ color: C.green, letterSpacing: "0.12em" }}>● ONLINE</span>
-            <span>{clock}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 6 : 14, fontSize: 10, color: C.muted }}>
+            {!isMobile && <span style={{ color: C.green, letterSpacing: "0.12em" }}>● ONLINE</span>}
+            {!isMobile && <span>{clock}</span>}
             <button
               onClick={toggle}
               style={{
@@ -1028,11 +1060,11 @@ export default function IOCExplorer() {
               }}
             >
               {isDark ? <Sun size={10} /> : <Moon size={10} />}
-              {isDark ? "LIGHT" : "DARK"}
+              {!isMobile && (isDark ? "LIGHT" : "DARK")}
             </button>
           </div>
         </div>
-        <div style={{ paddingBottom: 7, paddingLeft: 17 }}>
+        <div style={{ paddingBottom: 5, paddingLeft: isMobile ? 4 : 17 }}>
           <Breadcrumb />
         </div>
       </header>
@@ -1075,23 +1107,25 @@ export default function IOCExplorer() {
 
       {/* ── Stats bar (IOC only) ── */}
       {tab === "ioc" && <div style={{
-        borderBottom: `1px solid ${C.border}`, padding: "6px 24px",
+        borderBottom: `1px solid ${C.border}`, padding: isMobile ? "5px 12px" : "6px 24px",
         display: "flex", background: C.accentFaint, flexShrink: 0,
+        overflowX: "auto", WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"],
       }}>
         {([
           { label: "TOTAL IOCs",      value: stats?.total_iocs,      color: C.white  },
           { label: "MALICIOUS",        value: stats?.malicious,       color: C.red    },
-          { label: "HIGH CONFIDENCE",  value: stats?.high_confidence, color: C.orange },
-          { label: "LAST 24H",         value: stats?.recent_24h,      color: C.green  },
+          { label: "HIGH CONF",        value: stats?.high_confidence, color: C.orange },
+          { label: "24H",              value: stats?.recent_24h,      color: C.green  },
         ] as const).map(({ label, value, color }, i) => (
           <div key={i} style={{
-            display: "flex", alignItems: "center", gap: 10,
-            paddingRight: 24, marginRight: 24,
+            display: "flex", alignItems: "center", gap: isMobile ? 5 : 10,
+            paddingRight: isMobile ? 12 : 24, marginRight: isMobile ? 12 : 24,
             borderRight: i < 3 ? `1px solid ${C.border}` : "none",
+            flexShrink: 0,
           }}>
-            <span style={{ fontSize: 10, color: C.muted, letterSpacing: "0.15em" }}>{label}</span>
+            <span style={{ fontSize: isMobile ? 8 : 10, color: C.muted, letterSpacing: "0.1em", whiteSpace: "nowrap" }}>{label}</span>
             <span style={{
-              fontSize: 15, fontWeight: 900, color,
+              fontSize: isMobile ? 13 : 15, fontWeight: 900, color,
               textShadow: `0 0 12px ${color}55`,
               fontVariantNumeric: "tabular-nums",
             }}>
@@ -1103,9 +1137,35 @@ export default function IOCExplorer() {
 
       {tab === "cve" ? <CVEExplorer /> : tab === "mitre" ? <MITREExplorer /> : <>
 
+      {/* ── Mobile panel selector ── */}
+      {isMobile && (
+        <div style={{
+          display: "flex", borderBottom: `1px solid ${C.border}`,
+          background: C.surface, flexShrink: 0,
+        }}>
+          {(["feed", "intel", "recent"] as const).map((p) => {
+            const labels = { feed: "IOC FEED", intel: "INTEL", recent: "RECENT" };
+            const on = mobilePanel === p;
+            return (
+              <button key={p} onClick={() => setMobilePanel(p)} style={{
+                flex: 1, padding: "8px 0", fontSize: 9, fontWeight: 700,
+                letterSpacing: "0.14em", fontFamily: C.mono,
+                border: "none", cursor: "pointer",
+                background: on ? `${C.red}10` : "transparent",
+                color: on ? C.red : C.muted,
+                borderBottom: on ? `2px solid ${C.red}` : "2px solid transparent",
+                transition: "color 100ms, background 100ms",
+              }}>
+                {labels[p]}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* ── Search bar ── */}
       <div style={{
-        padding: "10px 24px", borderBottom: `1px solid ${C.border}`,
+        padding: isMobile ? "8px 12px" : "10px 24px", borderBottom: `1px solid ${C.border}`,
         background: C.surface, flexShrink: 0,
       }}>
         <div style={{
@@ -1144,13 +1204,14 @@ export default function IOCExplorer() {
         </div>
       </div>
 
-      {/* ── Main split: 3 columns ── */}
+      {/* ── Main split: 3 columns on desktop, single panel on mobile ── */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
 
         {/* ─ Left: Campaigns + Actors intel ─ */}
+        {(!isMobile || mobilePanel === "intel") && (
         <div style={{
-          width: 320, flexShrink: 0, display: "flex", flexDirection: "column",
-          borderRight: `1px solid ${C.border}`, overflow: "hidden",
+          width: isMobile ? "100%" : 320, flexShrink: 0, display: "flex", flexDirection: "column",
+          borderRight: isMobile ? "none" : `1px solid ${C.border}`, overflow: "hidden",
           background: C.surface,
         }}>
           <div style={{
@@ -1172,15 +1233,17 @@ export default function IOCExplorer() {
             />
           </div>
         </div>
+        )}
 
         {/* ─ Center: IOC Feed ─ */}
+        {(!isMobile || mobilePanel === "feed") && (
         <div style={{
           flex: 1, display: "flex", flexDirection: "column",
-          borderRight: `1px solid ${C.border}`, overflow: "hidden", minWidth: 0,
+          borderRight: isMobile ? "none" : `1px solid ${C.border}`, overflow: "hidden", minWidth: 0,
         }}>
           {/* Feed controls */}
           <div style={{
-            padding: "7px 14px", borderBottom: `1px solid ${C.border}`,
+            padding: isMobile ? "6px 10px" : "7px 14px", borderBottom: `1px solid ${C.border}`,
             background: C.surface,
             display: "flex", justifyContent: "space-between", alignItems: "center",
             flexShrink: 0,
@@ -1235,7 +1298,8 @@ export default function IOCExplorer() {
             )}
           </div>
 
-          {/* Column headers */}
+          {/* Column headers — hidden on mobile */}
+          {!isMobile && (
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
             padding: "5px 14px 5px 17px", borderBottom: `1px solid ${C.border}`,
@@ -1250,6 +1314,7 @@ export default function IOCExplorer() {
             <div style={{ minWidth: 28 }}>CC</div>
             <div style={{ minWidth: 80, textAlign: "right" }}>LAST SEEN</div>
           </div>
+          )}
 
           {/* Rows */}
           <div style={{ flex: 1, overflowY: "auto" }}>
@@ -1272,6 +1337,7 @@ export default function IOCExplorer() {
                 <IOCRow
                   key={item.stix_id || `${item.ip_value}-${i}`}
                   item={item}
+                  compact={isMobile}
                   onOpenGraph={() => router.push(`/explore/graph?type=ioc&value=${encodeURIComponent(item.ip_value)}&from=ioc`)}
                   onHover={(v, x, y) => handleHover("ioc", v, x, y)}
                   onHoverMove={handleHoverMove}
@@ -1281,10 +1347,12 @@ export default function IOCExplorer() {
             )}
           </div>
         </div>
+        )}
 
         {/* ─ Right: Recent IOCs from Neo4j ─ */}
+        {(!isMobile || mobilePanel === "recent") && (
         <div style={{
-          width: 260, flexShrink: 0, display: "flex",
+          width: isMobile ? "100%" : 260, flexShrink: 0, display: "flex",
           flexDirection: "column", overflow: "hidden",
           background: C.surface,
         }}>
@@ -1300,10 +1368,11 @@ export default function IOCExplorer() {
             <RecentIOCsPanel data={news} />
           </div>
         </div>
+        )}
       </div>
 
-      {/* ── Node hover preview ── */}
-      {showPreview && hoverIdentity && (
+      {/* ── Node hover preview (desktop only) ── */}
+      {!isMobile && showPreview && hoverIdentity && (
         <NodeHoverPreview
           type={hoverIdentity.type}
           value={hoverIdentity.value}

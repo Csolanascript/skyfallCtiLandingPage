@@ -2,14 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
 import { Radar } from "lucide-react";
 import worldCountriesRaw from "world-countries";
 
 import styles from "./IOCGlobeMap.module.css";
-
-gsap.registerPlugin(useGSAP);
 
 const Globe = dynamic(() => import("react-globe.gl"), {
   ssr: false,
@@ -153,7 +149,8 @@ export default function IOCGlobeMap({
 }: IOCGlobeMapProps) {
   const shellRef = useRef<HTMLDivElement | null>(null);
   const globeRef = useRef<GlobeHandle | null>(null);
-  const [size, setSize] = useState({ width: 1, height: 1 });
+  // null = not measured yet; Globe only mounts once we have real dimensions
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [globeReady, setGlobeReady] = useState(false);
   const countryIndex = useMemo(() => buildCountryIndex(), []);
   const isDomainMode = Boolean(resolvedIpPoints && resolvedIpPoints.length > 0);
@@ -257,8 +254,12 @@ export default function IOCGlobeMap({
     const syncSize = () => {
       const rect = element.getBoundingClientRect();
       const nextWidth = Math.max(320, Math.floor(rect.width));
-      const nextHeight = nextWidth < 700 ? 430 : 520;
-      setSize((prev) => (prev.width === nextWidth && prev.height === nextHeight ? prev : { width: nextWidth, height: nextHeight }));
+      const nextHeight = nextWidth < 480 ? 280 : nextWidth < 700 ? 380 : 520;
+      setSize((prev) =>
+        prev && prev.width === nextWidth && prev.height === nextHeight
+          ? prev
+          : { width: nextWidth, height: nextHeight }
+      );
     };
     syncSize();
     const observer = new ResizeObserver(syncSize);
@@ -266,42 +267,41 @@ export default function IOCGlobeMap({
     return () => observer.disconnect();
   }, []);
 
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add({ reduceMotion: "(prefers-reduced-motion: reduce)" }, (context) => {
-        const { reduceMotion } = context.conditions as { reduceMotion: boolean };
-        gsap.fromTo(".ioc-globe-shell", { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: reduceMotion ? 0 : 0.75, ease: "power3.out" });
-        const globe = globeRef.current;
-        const controls = globe?.controls?.();
-        if (controls) {
-          controls.enablePan = false;
-          controls.enableDamping = true;
-          controls.dampingFactor = 0.08;
-          controls.minDistance = 150;
-          controls.maxDistance = 480;
-          controls.autoRotate = true;
-          controls.autoRotateSpeed = reduceMotion ? 0.12 : 0.28;
-        }
-        const material = globe?.globeMaterial?.();
-        if (material) {
-          material.color.set("#0f172a");
-          material.emissive.set("#000000");
-          material.emissiveIntensity = 0.3;
-          material.opacity = 0.48;
-          material.transparent = true;
-        }
-        const focusPoint = resolvedCentroid ?? sourcePoint;
-        if (focusPoint && globe?.pointOfView) {
-          globe.pointOfView({ lat: focusPoint.lat, lng: focusPoint.lng, altitude: 2.05 }, 0);
-          globe.pointOfView({ lat: focusPoint.lat, lng: focusPoint.lng, altitude: reduceMotion ? 1.78 : 1.45 }, reduceMotion ? 0 : 1300);
-        }
-        return () => { if (controls) controls.autoRotate = false; };
-      });
-      return () => mm.revert();
-    },
-    { scope: shellRef, dependencies: [arcs.length, ringCenter?.lat, ringCenter?.lng, size.width, size.height, globeReady], revertOnUpdate: true }
-  );
+  // Set up globe controls and initial view — runs once when the globe is ready
+  useEffect(() => {
+    if (!globeReady || !ringCenter) return;
+    const globe = globeRef.current;
+
+    const controls = globe?.controls?.();
+    if (controls) {
+      controls.enablePan = false;
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.minDistance = 220;
+      controls.maxDistance = 380;
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 0.28;
+    }
+
+    const material = globe?.globeMaterial?.();
+    if (material) {
+      material.color.set("#0f172a");
+      material.emissive.set("#000000");
+      material.emissiveIntensity = 0.3;
+      material.opacity = 0.48;
+      material.transparent = true;
+    }
+
+    if (globe?.pointOfView) {
+      globe.pointOfView({ lat: ringCenter.lat, lng: ringCenter.lng, altitude: 1.6 }, 0);
+    }
+
+    return () => {
+      const c = globeRef.current?.controls?.();
+      if (c) c.autoRotate = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [globeReady]);
 
   if (!ringCenter) {
     return (
@@ -350,6 +350,10 @@ export default function IOCGlobeMap({
       </div>
 
       <div className={styles.canvasWrap}>
+        {!size && (
+          <div className={styles.placeholder} />
+        )}
+        {size && (
         <Globe
           ref={globeRef as never}
           onGlobeReady={() => setGlobeReady(true)}
@@ -393,6 +397,7 @@ export default function IOCGlobeMap({
           ringPropagationSpeed={1.5}
           ringRepeatPeriod={900}
         />
+        )}
       </div>
     </div>
   );

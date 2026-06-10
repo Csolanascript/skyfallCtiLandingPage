@@ -1,17 +1,17 @@
-'use client'
+"use client"
 import dynamic from 'next/dynamic'
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useMemo } from 'react'
 
 // react-globe.gl has SSR issues — dynamic import with no ssr
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Globe = dynamic(() => import('react-globe.gl'), { ssr: false }) as any
 
-const ARC_COUNT = 20
+const DEFAULT_ARC_COUNT = 20
 
-function makeArcs() {
+function makeArcs(count: number) {
   const lats = [55.75, 39.9,  35.68, 51.5, 48.85, 40.71, -33.86, 28.61, 19.43, 1.35]
   const lons = [37.61, 116.4, 139.7, -0.1, 2.35, -74.0, 151.2,  77.2, -99.1, 103.8]
-  return Array.from({ length: ARC_COUNT }, (_, i) => ({
+  return Array.from({ length: count }, (_, i) => ({
     startLat: lats[i % lats.length] + (Math.random() - 0.5) * 10,
     startLng: lons[i % lons.length] + (Math.random() - 0.5) * 10,
     endLat:   lats[(i + 3) % lats.length] + (Math.random() - 0.5) * 10,
@@ -37,17 +37,42 @@ function makePoints() {
 
 export function LandingGlobe() {
   const globeRef = useRef<unknown>(null)
-  const [arcs]   = useState(makeArcs)
-  const [points] = useState(makePoints)
+  const [isMobile, setIsMobile] = useState(false)
+  const [arcCount, setArcCount] = useState(DEFAULT_ARC_COUNT)
+  const [winW, setWinW] = useState(1280)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const calc = () => {
+      const w = window.innerWidth
+      setWinW(w)
+      if (w <= 420) {
+        setIsMobile(true); setArcCount(8)
+      } else if (w <= 768) {
+        setIsMobile(true); setArcCount(12)
+      } else {
+        setIsMobile(false); setArcCount(DEFAULT_ARC_COUNT)
+      }
+    }
+    calc()
+    window.addEventListener('resize', calc)
+    return () => window.removeEventListener('resize', calc)
+  }, [])
+
+  const arcs = useMemo(() => makeArcs(arcCount), [arcCount])
+  const points = useMemo(() => makePoints().slice(0, isMobile ? 5 : 10), [isMobile])
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const g = globeRef.current as any
     if (!g) return
     g.controls().autoRotate      = true
-    g.controls().autoRotateSpeed = 0.5
+    g.controls().autoRotateSpeed = isMobile ? 0.2 : 0.5
     g.controls().enableZoom      = false
   })
+
+  const width  = isMobile ? Math.min(winW - 28, 360) : Math.min(Math.round(winW * 0.54), 960)
+  const height = isMobile ? 260 : Math.min(Math.round(winW * 0.36), 640)
 
   return (
     <Globe
@@ -60,15 +85,15 @@ export function LandingGlobe() {
       arcColor="color"
       arcDashLength={0.4}
       arcDashGap={0.3}
-      arcDashAnimateTime={2500}
+      arcDashAnimateTime={isMobile ? 4000 : 2500}
       arcStroke={0.5}
       pointsData={points}
       pointColor="color"
       pointAltitude={0.01}
       pointRadius={0.35}
       pointLabel="label"
-      width={680}
-      height={480}
+      width={width}
+      height={height}
     />
   )
 }

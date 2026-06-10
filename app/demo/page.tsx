@@ -4,9 +4,9 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useState } from 'react'
 import {
-  Activity, AlertTriangle, BarChart3, CheckCircle2, Clock3, Copy,
+  Activity, AlertTriangle, BarChart3, CheckCircle2, Clock3,
   Database, Download, ExternalLink, FileText, Gauge, Globe,
-  Link2, MapPinned, Radar, ScanSearch, ShieldCheck, Sparkles,
+  Link2, MapPinned, ScanSearch, ShieldCheck, Sparkles,
   Sun, Moon, Target, Waypoints,
 } from 'lucide-react'
 import styles from '@/components/intelowl/ObservableAnalyzerPage.module.css'
@@ -404,16 +404,7 @@ function exportPdfReport(): void {
 export default function DemoPage() {
   const [isDark, setIsDark] = useState(true)
   const [feedback, setFeedback] = useState<string | null>(null)
-  const [copied, setCopied] = useState<string | null>(null)
   const [selAnalyzer, setSelAnalyzer] = useState<number | null>(null)
-
-  const copyText = (text: string, key: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(key)
-      setFeedback(`Copied ${key}`)
-      setTimeout(() => { setCopied(null); setFeedback(null) }, 1600)
-    })
-  }
 
   const handlePdf = () => {
     setFeedback('Opening print dialog — save as PDF…')
@@ -633,7 +624,6 @@ export default function DemoPage() {
             </div>
           </div>
           <div className={styles.headerActions}>
-            <span className={styles.onlineBadge}><Radar size={12} /> IntelOwl Online</span>
             <button onClick={() => setIsDark(p => !p)} className={styles.backButton} style={{ cursor: 'pointer' }}>
               {isDark ? <Sun size={12} /> : <Moon size={12} />}
               {isDark ? 'LIGHT' : 'DARK'}
@@ -671,9 +661,6 @@ export default function DemoPage() {
                 <button type="button" className={styles.primaryButton} onClick={() => setFeedback('Demo mode — result already loaded.')}>
                   <Sparkles size={14} /> Analyze Now
                 </button>
-                <Link href="/intelowl/analyze-ip"     className={`${styles.consoleLink} ${styles.consoleLinkActive}`}>IP Console</Link>
-                <Link href="/intelowl/analyze-hash"   className={styles.consoleLink}>Hash Console</Link>
-                <Link href="/intelowl/analyze-domain" className={styles.consoleLink}>Domain Console</Link>
               </div>
             </form>
           </section>
@@ -693,10 +680,8 @@ export default function DemoPage() {
               {/* KPI grid */}
               <div className={styles.kpiGrid}>
                 {[
-                  { label: 'Job ID',            value: String(JOB_ID),     meta: `Playbook: ${PLAYBOOK}` },
-                  { label: 'Execution Status',  value: STATUS,              meta: `Total Time: ${PROCESS_TIME} s` },
-                  { label: 'Analyzer Coverage', value: '12/14',             meta: 'trusted sources completed' },
-                  { label: 'STIX Bundle',       value: String(STIX_COUNT),  meta: 'objects exported' },
+                  { label: 'Analyzer Coverage', value: '12/14',            meta: 'trusted sources completed' },
+                  { label: 'STIX Bundle',       value: String(STIX_COUNT), meta: 'objects exported' },
                 ].map(({ label, value, meta }) => (
                   <article key={label} data-anim="kpi" className={styles.kpiCard}>
                     <p className={styles.kpiLabel}>{label}</p>
@@ -723,22 +708,14 @@ export default function DemoPage() {
                 <article className={styles.quickActions}>
                   <h3 className={styles.sectionTitle}><FileText size={12} /> Quick Actions</h3>
                   <div className={styles.quickActionsButtons}>
-                    <button type="button" className={styles.quickButton} onClick={() => copyText(OBS, 'IOC')}>
-                      <Copy size={11} /> {copied === 'IOC' ? 'Copied!' : 'Copy IOC'}
+                    <button
+                      type="button"
+                      className={styles.quickButton}
+                      onClick={handlePdf}
+                      style={{ padding: '20px 24px', fontSize: 15, width: '100%', justifyContent: 'center', gap: 12, letterSpacing: '0.08em' }}
+                    >
+                      <Download size={20} /> Download PDF Report
                     </button>
-                    <button type="button" className={styles.quickButton} onClick={() => copyText(INDICATOR_ID, 'STIX ID')}>
-                      <Copy size={11} /> {copied === 'STIX ID' ? 'Copied!' : 'Copy STIX ID'}
-                    </button>
-                    <button type="button" className={styles.quickButton} onClick={handlePdf}>
-                      <Download size={11} /> Download PDF Report
-                    </button>
-                    <button type="button" className={styles.quickButton} onClick={() => setFeedback('Demo mode — result already loaded.')}>
-                      <Sparkles size={11} /> Repeat Analysis
-                    </button>
-                  </div>
-                  <div className={styles.quickMeta}>
-                    <p className={styles.truncate}>Indicator ID: {INDICATOR_ID}</p>
-                    <p className={styles.truncate}>Bundle ID: {BUNDLE_ID}</p>
                   </div>
                   {feedback && <p className={styles.feedback}>{feedback}</p>}
                 </article>
@@ -917,37 +894,9 @@ export default function DemoPage() {
                 </div>
               </section>
 
-              {/* Analyzer board + Timeline */}
+              {/* Timeline and Output */}
               <div data-anim="detail" className={styles.rowAnalyzer}>
-                <article className={styles.analyzerBoard}>
-                  <div className={styles.resultHeader}>
-                    <h3 className={styles.sectionTitle}><BarChart3 size={12} /> Analyzer Execution Board</h3>
-                    <span className={styles.sectionMuted}>14 reports · 12 success · 2 failed</span>
-                  </div>
-                  <div className={styles.coverageTrack}>
-                    <div className={styles.coverageBar} style={{ width: '85.71%' }} />
-                  </div>
-                  <div className={styles.analyzerList}>
-                    {ANALYZERS.map((a, i) => (
-                      <button key={a.name} type="button" className={styles.analyzerItemButton} onClick={() => setSelAnalyzer(selAnalyzer === i ? null : i)}>
-                        <div className={styles.analyzerItemHead}>
-                          <p className={styles.analyzerName}>{a.name}</p>
-                          <div className={styles.analyzerMeta}>
-                            <span className={styles.sectionMuted}>{fmtSec(a.ms)}</span>
-                            <span className={statusBadgeClass(a.status)}>{a.status}</span>
-                          </div>
-                        </div>
-                        <div className={styles.analyzerCounts}>
-                          <span><Activity size={12} /> analyzer</span>
-                          <span><Clock3 size={12} /> 6/1/2026, 4:17:17 PM</span>
-                          <span><Database size={12} /> ID {a.id}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </article>
-
-                <article className={styles.timelineCard}>
+                <article className={`${styles.stixCard} ${styles.stixWide}`}>
                   <h3 className={styles.sectionTitle}><Clock3 size={12} /> Timeline and Output</h3>
                   <div className={styles.contextList}>
                     <p>Received: <span>6/1/2026, 4:17:17 PM</span></p>
@@ -955,15 +904,44 @@ export default function DemoPage() {
                     <p>Warnings: <strong>0</strong></p>
                     <p>Errors: <strong>0</strong></p>
                   </div>
-                  <div className={styles.resolutionCard}>
-                    <p className={styles.sectionTitle}>Resolved Domains</p>
-                    <div className={styles.resolutionList}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <p className="font-mono" style={{ fontSize: 12, color: '#93c5fd', marginRight: 8 }}>33.196.62.34.bc.googleusercontent.com</p>
-                        <span style={{ fontSize: 9, display: 'flex', alignItems: 'center', gap: 4, color: 'var(--hud-red)', letterSpacing: '0.1em' }}>
-                          <ScanSearch size={10} /> Pivot
-                        </span>
+                </article>
+              </div>
+
+              {/* Resolved Domains — BIG */}
+              <div data-anim="detail" className={styles.rowAnalyzer}>
+                <article className={`${styles.stixCard} ${styles.stixWide}`} style={{ padding: 24 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <h3 className={styles.sectionTitle} style={{ fontSize: 15 }}><ScanSearch size={16} /> Resolved Domains</h3>
+                    <span className={styles.sectionMuted}>PTR · Reverse DNS resolution</span>
+                  </div>
+                  <div style={{ border: '1px solid rgba(34,211,238,0.2)', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px 28px', background: 'rgba(34,211,238,0.04)', flexWrap: 'wrap', gap: 16 }}>
+                      <div>
+                        <p style={{ fontFamily: 'var(--hud-mono)', fontSize: 17, color: '#93c5fd', fontWeight: 700, letterSpacing: '0.04em' }}>
+                          33.196.62.34.bc.googleusercontent.com
+                        </p>
+                        <p style={{ fontSize: 11, color: 'var(--hud-muted)', marginTop: 8, letterSpacing: '0.1em' }}>
+                          PTR · Reverse DNS · Google Cloud Infrastructure · AS{ASN}
+                        </p>
                       </div>
+                      <Link
+                        href="/explore/graph?type=domain&value=33.196.62.34.bc.googleusercontent.com&from=demo"
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 10,
+                          padding: '14px 28px',
+                          background: 'rgba(232,84,25,0.08)',
+                          border: '1px solid rgba(232,84,25,0.45)',
+                          color: 'var(--hud-red)',
+                          textDecoration: 'none',
+                          fontSize: 13, letterSpacing: '0.14em',
+                          fontFamily: 'var(--hud-mono)',
+                          transition: 'all 150ms',
+                          whiteSpace: 'nowrap',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <ScanSearch size={16} /> PIVOT ON DOMAIN
+                      </Link>
                     </div>
                   </div>
                 </article>
@@ -1115,38 +1093,72 @@ export default function DemoPage() {
                 </article>
               </div>
 
-              {/* Local Neo4j DB */}
+              {/* Local Intelligence Database → 3D Graph Explorer */}
               <div data-anim="detail" className={styles.rowAnalyzer}>
                 <article className={`${styles.stixCard} ${styles.stixWide}`}>
                   <div className={styles.resultHeader}>
                     <h3 className={styles.sectionTitle}><Database size={12} /> Local Intelligence Database</h3>
-                    <span className={styles.sectionMuted}>22 nodes and 52 relationships found in local Neo4j database.</span>
+                    <span className={styles.sectionMuted}>22 nodes · 52 relationships · Neo4j</span>
                   </div>
-                  <div style={{ overflowX: 'auto', marginTop: 8 }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10 }}>
-                      <thead>
-                        <tr style={{ background: 'rgba(232,84,25,0.10)' }}>
-                          {['Label(s)', 'Key Properties', 'Edges'].map(h => (
-                            <th key={h} style={{ padding: '6px 10px', textAlign: 'left', fontSize: 9, letterSpacing: '0.12em', color: 'var(--hud-muted)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {LOCAL_NODES.map((n, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                            <td style={{ padding: '5px 10px', verticalAlign: 'top' }}>
-                              <span className={styles.reportBadge} style={{ display: 'inline-block', whiteSpace: 'nowrap', fontSize: 8 }}>{n.labels}</span>
-                            </td>
-                            <td style={{ padding: '5px 10px', fontSize: 9, color: 'var(--hud-muted)', lineHeight: 1.7 }}>{n.props}</td>
-                            <td style={{ padding: '5px 10px', textAlign: 'center', fontWeight: 700, color: 'var(--hud-red)' }}>{n.edges}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, padding: '36px 16px' }}>
+                    <p style={{ fontSize: 12, color: 'var(--hud-muted)', textAlign: 'center', lineHeight: 1.8 }}>
+                      <strong style={{ color: 'var(--hud-white)' }}>22</strong> nodes and{' '}
+                      <strong style={{ color: 'var(--hud-white)' }}>52</strong> relationships found for{' '}
+                      <span style={{ fontFamily: 'var(--hud-mono)', color: 'var(--hud-red)' }}>{OBS}</span>{' '}
+                      in the local Neo4j knowledge graph.
+                    </p>
+                    <Link
+                      href="/explore/graph?type=ioc&value=34.62.196.33&from=demo"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 12,
+                        padding: '18px 40px',
+                        background: 'rgba(34,211,238,0.07)',
+                        border: '1px solid rgba(34,211,238,0.4)',
+                        color: '#22d3ee',
+                        textDecoration: 'none',
+                        fontSize: 14,
+                        letterSpacing: '0.2em',
+                        fontFamily: 'var(--hud-mono)',
+                        transition: 'all 200ms',
+                      }}
+                    >
+                      <Waypoints size={20} /> OPEN 3D GRAPH EXPLORER
+                    </Link>
+                    <p style={{ fontSize: 9, color: 'var(--hud-muted)', letterSpacing: '0.1em' }}>
+                      BASED_ON · LOCATED_AT · CONSISTS_OF · REFERENCES · SAME_AS · EXHIBITS
+                    </p>
                   </div>
-                  <p style={{ marginTop: 8, fontSize: 9, color: 'var(--hud-muted)', letterSpacing: '0.1em' }}>
-                    Relationship types: BASED_ON, LOCATED_AT, CONSISTS_OF, REFERENCES, SAME_AS, EXHIBITS
-                  </p>
+                </article>
+              </div>
+
+              {/* Analyzer Execution Board — at the end */}
+              <div data-anim="detail" className={styles.rowAnalyzer}>
+                <article className={`${styles.analyzerBoard} ${styles.stixWide}`}>
+                  <div className={styles.resultHeader}>
+                    <h3 className={styles.sectionTitle}><BarChart3 size={12} /> Analyzer Execution Board</h3>
+                    <span className={styles.sectionMuted}>14 reports · 12 success · 2 failed</span>
+                  </div>
+                  <div className={styles.coverageTrack}>
+                    <div className={styles.coverageBar} style={{ width: '85.71%' }} />
+                  </div>
+                  <div className={styles.analyzerList}>
+                    {ANALYZERS.map((a, i) => (
+                      <button key={a.name} type="button" className={styles.analyzerItemButton} onClick={() => setSelAnalyzer(selAnalyzer === i ? null : i)}>
+                        <div className={styles.analyzerItemHead}>
+                          <p className={styles.analyzerName}>{a.name}</p>
+                          <div className={styles.analyzerMeta}>
+                            <span className={styles.sectionMuted}>{fmtSec(a.ms)}</span>
+                            <span className={statusBadgeClass(a.status)}>{a.status}</span>
+                          </div>
+                        </div>
+                        <div className={styles.analyzerCounts}>
+                          <span><Activity size={12} /> analyzer</span>
+                          <span><Clock3 size={12} /> 6/1/2026, 4:17:17 PM</span>
+                          <span><Database size={12} /> ID {a.id}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </article>
               </div>
 

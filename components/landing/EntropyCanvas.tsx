@@ -8,9 +8,11 @@ export function ChaosCanvas({ w = 240, h = 320 }: { w?: number; h?: number }) {
     const canvas = canvasRef.current; if (!canvas) return
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D; if (!ctx) return
     const dpr = window.devicePixelRatio || 1
-    canvas.width = w * dpr; canvas.height = h * dpr
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 420
+    const usedDpr = isMobile ? Math.min(dpr, 1) : dpr
+    canvas.width = w * usedDpr; canvas.height = h * usedDpr
     canvas.style.width = `${w}px`; canvas.style.height = `${h}px`
-    ctx.scale(dpr, dpr)
+    ctx.scale(usedDpr, usedDpr)
 
     class Particle {
       x: number; y: number; vx: number; vy: number; r: number
@@ -37,19 +39,28 @@ export function ChaosCanvas({ w = 240, h = 320 }: { w?: number; h?: number }) {
       }
     }
 
-    const count = Math.round((w * h) / 280)
+    const count = Math.max(6, Math.round((w * h) / (isMobile ? 600 : 280)))
     const particles: Particle[] = []
     for (let i = 0; i < count; i++) particles.push(new Particle())
 
-    let animId: number
-    const animate = () => {
+    let animId: number | null = null
+    let intervalId: number | null = null
+    const loop = () => {
       ctx.fillStyle = 'rgba(0,0,0,0.18)'
       ctx.fillRect(0, 0, w, h)
       particles.forEach(p => { p.update(); p.draw() })
-      animId = requestAnimationFrame(animate)
     }
-    animate()
-    return () => cancelAnimationFrame(animId)
+    if (isMobile) {
+      // throttle to ~30fps on small devices
+      intervalId = window.setInterval(loop, 1000 / 30)
+    } else {
+      const animate = () => { loop(); animId = requestAnimationFrame(animate) }
+      animate()
+    }
+    return () => {
+      if (animId) cancelAnimationFrame(animId)
+      if (intervalId) clearInterval(intervalId)
+    }
   }, [w, h])
 
   return <canvas ref={canvasRef} style={{ display: 'block' }} />
@@ -62,19 +73,21 @@ export function GraphCanvas({ w = 240, h = 320 }: { w?: number; h?: number }) {
     const canvas = canvasRef.current; if (!canvas) return
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D; if (!ctx) return
     const dpr = window.devicePixelRatio || 1
-    canvas.width = w * dpr; canvas.height = h * dpr
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 420
+    const usedDpr = isMobile ? Math.min(dpr, 1) : dpr
+    canvas.width = w * usedDpr; canvas.height = h * usedDpr
     canvas.style.width = `${w}px`; canvas.style.height = `${h}px`
-    ctx.scale(dpr, dpr)
+    ctx.scale(usedDpr, usedDpr)
 
     const EDGE_DIST = Math.min(w, h) * 0.35
 
     interface Node { x: number; y: number; r: number; hub: boolean; phase: number }
 
     const clusters = [
-      { cx: w * 0.27, cy: h * 0.22, n: 7 },
-      { cx: w * 0.74, cy: h * 0.28, n: 6 },
-      { cx: w * 0.22, cy: h * 0.72, n: 7 },
-      { cx: w * 0.75, cy: h * 0.74, n: 8 },
+      { cx: w * 0.27, cy: h * 0.22, n: Math.max(3, Math.round(7 * (isMobile ? 0.6 : 1))) },
+      { cx: w * 0.74, cy: h * 0.28, n: Math.max(3, Math.round(6 * (isMobile ? 0.6 : 1))) },
+      { cx: w * 0.22, cy: h * 0.72, n: Math.max(3, Math.round(7 * (isMobile ? 0.6 : 1))) },
+      { cx: w * 0.75, cy: h * 0.74, n: Math.max(3, Math.round(8 * (isMobile ? 0.6 : 1))) },
     ]
 
     const nodes: Node[] = []
@@ -102,9 +115,9 @@ export function GraphCanvas({ w = 240, h = 320 }: { w?: number; h?: number }) {
       }
     }
 
-    let t = 0; let animId: number
-    const animate = () => {
-      t += 0.018
+    let t = 0; let animId: number | null = null; let intervalId: number | null = null
+    const loop = () => {
+      t += isMobile ? 0.035 : 0.018
       ctx.fillStyle = 'rgba(0,0,0,0.14)'
       ctx.fillRect(0, 0, w, h)
 
@@ -138,11 +151,14 @@ export function GraphCanvas({ w = 240, h = 320 }: { w?: number; h?: number }) {
         ctx.fillStyle = n.hub ? 'rgba(232,84,25,0.95)' : 'rgba(232,84,25,0.65)'
         ctx.fill()
       })
-
-      animId = requestAnimationFrame(animate)
     }
-    animate()
-    return () => cancelAnimationFrame(animId)
+    if (isMobile) {
+      intervalId = window.setInterval(loop, 1000 / 30)
+    } else {
+      const animate = () => { loop(); animId = requestAnimationFrame(animate) }
+      animate()
+    }
+    return () => { if (animId) cancelAnimationFrame(animId); if (intervalId) clearInterval(intervalId) }
   }, [w, h])
 
   return <canvas ref={canvasRef} style={{ display: 'block' }} />

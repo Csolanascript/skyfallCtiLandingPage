@@ -6,6 +6,10 @@ export const metadata: Metadata = {
   title: "Skyfall CTI — Cyber Threat Intelligence Platform",
   description:
     "Real-time cyber threat intelligence. Ingest, correlate, and act on threat data at machine speed.",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

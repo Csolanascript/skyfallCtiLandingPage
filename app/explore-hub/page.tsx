@@ -3,8 +3,10 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { gsap } from 'gsap'
 import { ParticleCanvas } from '@/components/ui/aether-flow-hero'
-import { Shield, BarChart3, ScanSearch, ArrowRight, ChevronLeft, Cpu, Eye } from 'lucide-react'
-import { useTheme } from '@/lib/theme'
+import { Shield, BarChart3, ScanSearch, ArrowRight, ChevronLeft, Network, Layers } from 'lucide-react'
+
+const R    = '#E85419'
+const MONO = "'JetBrains Mono','Share Tech Mono',monospace"
 
 const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
@@ -23,57 +25,45 @@ const STYLES = `
   0%,100%{ box-shadow: 0 0 0 1px rgba(34,211,238,0.25), 0 0 40px rgba(34,211,238,0.08); }
   50%    { box-shadow: 0 0 0 1px rgba(34,211,238,0.55), 0 0 60px rgba(34,211,238,0.18); }
 }
-@keyframes card-pulse-violet {
-  0%,100%{ box-shadow: 0 0 0 1px rgba(139,92,246,0.25), 0 0 40px rgba(139,92,246,0.08); }
-  50%    { box-shadow: 0 0 0 1px rgba(139,92,246,0.55), 0 0 60px rgba(139,92,246,0.18); }
-}
 @keyframes card-pulse-green {
-  0%,100%{ box-shadow: 0 0 0 1px rgba(34,197,94,0.25), 0 0 40px rgba(34,197,94,0.08); }
-  50%    { box-shadow: 0 0 0 1px rgba(34,197,94,0.55), 0 0 60px rgba(34,197,94,0.18); }
+  0%,100%{ box-shadow: 0 0 0 1px rgba(74,222,128,0.25), 0 0 40px rgba(74,222,128,0.08); }
+  50%    { box-shadow: 0 0 0 1px rgba(74,222,128,0.55), 0 0 60px rgba(74,222,128,0.18); }
 }
 .card-orange { animation: card-pulse-orange 3.5s ease-in-out infinite; }
 .card-cyan   { animation: card-pulse-cyan   3.5s ease-in-out 0.8s infinite; }
-.card-violet { animation: card-pulse-violet 3.5s ease-in-out 1.6s infinite; }
-.card-green  { animation: card-pulse-green  3.5s ease-in-out 2.4s infinite; }
+.card-green  { animation: card-pulse-green  3.5s ease-in-out 1.6s infinite; }
+@keyframes card-pulse-purple {
+  0%,100%{ box-shadow: 0 0 0 1px rgba(187,85,255,0.25), 0 0 40px rgba(187,85,255,0.08); }
+  50%    { box-shadow: 0 0 0 1px rgba(187,85,255,0.55), 0 0 60px rgba(187,85,255,0.18); }
+}
+.card-purple { animation: card-pulse-purple 3.5s ease-in-out 2.4s infinite; }
 .lp-neon    { animation: lp-neon 3s ease-in-out infinite; }
 .lp-flicker { animation: lp-flicker 7s infinite; }
 `
 
-function Brackets({ color, size = 10 }: { color?: string; size?: number }) {
+function Brackets({ color = R, size = 10 }: { color?: string; size?: number }) {
   const s: React.CSSProperties = { position: 'absolute', width: size, height: size }
-  const c = color ?? '#E85419'
   return (
     <>
-      <div style={{ ...s, top: -1, left:  -1, borderTop:    `2px solid ${c}`, borderLeft:  `2px solid ${c}` }} />
-      <div style={{ ...s, top: -1, right: -1, borderTop:    `2px solid ${c}`, borderRight: `2px solid ${c}` }} />
-      <div style={{ ...s, bottom: -1, left:  -1, borderBottom: `2px solid ${c}`, borderLeft:  `2px solid ${c}` }} />
-      <div style={{ ...s, bottom: -1, right: -1, borderBottom: `2px solid ${c}`, borderRight: `2px solid ${c}` }} />
+      <div style={{ ...s, top: -1, left:  -1, borderTop:    `2px solid ${color}`, borderLeft:  `2px solid ${color}` }} />
+      <div style={{ ...s, top: -1, right: -1, borderTop:    `2px solid ${color}`, borderRight: `2px solid ${color}` }} />
+      <div style={{ ...s, bottom: -1, left:  -1, borderBottom: `2px solid ${color}`, borderLeft:  `2px solid ${color}` }} />
+      <div style={{ ...s, bottom: -1, right: -1, borderBottom: `2px solid ${color}`, borderRight: `2px solid ${color}` }} />
     </>
   )
 }
 
 const OPTIONS = [
   {
-    href:    '/dashboard',
+    href:    '/dashboards',
     icon:    BarChart3,
-    label:   'DASHBOARDS',
+    label:   'ANALYTICS DASHBOARDS',
     sub:     'INTELLIGENCE ANALYTICS',
-    desc:    'IOC heatmaps, CVE exposure, malware activity, intrusion-set tracking, MITRE ATT&CK coverage and full Neo4j graph node status.',
+    desc:    'IOC heatmaps, CVE exposure, malware activity, intrusion-set tracking, MITRE ATT&CK coverage and full graph node status.',
     tags:    ['IOC TRENDS', 'CVE TRACKER', 'MITRE ATT&CK', 'GRAPH STATUS'],
     color:   '#E85419',
     pulse:   'card-orange',
     metric:  '8 VIEWS',
-  },
-  {
-    href:    '/demo',
-    icon:    Eye,
-    label:   'LIVE DEMO',
-    sub:     'ANALYSIS WALKTHROUGH',
-    desc:    'Follow a real-world threat investigation end-to-end — from raw IOC submission to graph correlation, enrichment, and attribution.',
-    tags:    ['IOC ANALYSIS', 'ENRICHMENT', 'GRAPH VIZ', 'ATTRIBUTION'],
-    color:   '#22d3ee',
-    pulse:   'card-cyan',
-    metric:  'GUIDED',
   },
   {
     href:    '/explore',
@@ -81,94 +71,79 @@ const OPTIONS = [
     label:   'IOC EXPLORER',
     sub:     'THREAT INTELLIGENCE EXPLORER',
     desc:    'Browse IOC indicators with graph preview, CVE database with EPSS scores, and MITRE ATT&CK matrix with 3D actor correlations.',
-    tags:    ['IOC EXPLORER', 'CVE DATABASE', 'MITRE ATT&CK', '3D NODES'],
-    color:   '#22c55e',
-    pulse:   'card-green',
+    tags:    ['IOC INDICATORS', 'CVE DATABASE', 'MITRE ATT&CK', '3D NODES'],
+    color:   '#22d3ee',
+    pulse:   'card-cyan',
     metric:  '3 TABS',
   },
   {
-    href:    '/forge',
-    icon:    Cpu,
-    label:   'STIX FORGE',
-    sub:     'BUNDLE BUILDER',
-    desc:    'Create STIX 2.1 entities visually — no JSON. Define relationships, pick from existing graph nodes, and ingest with live inference across 18 phases.',
-    tags:    ['STIX 2.1', 'LIVE INFERENCE', 'GRAPH INGEST', 'ZERO JSON'],
-    color:   '#8b5cf6',
-    pulse:   'card-violet',
-    metric:  '18 PHASES',
+    href:    '/explore/graph',
+    icon:    Network,
+    label:   'GRAPH CONSOLE',
+    sub:     'CTI KNOWLEDGE GRAPH',
+    desc:    'Navigate the CTI knowledge graph — query nodes, traverse relationships and inspect the full STIX entity topology interactively.',
+    tags:    ['STIX TOPOLOGY', 'LIVE GRAPH', 'IOC NODES', 'RELATIONSHIPS'],
+    color:   '#4ade80',
+    pulse:   'card-green',
+    metric:  '5M+ NODES',
+  },
+  {
+    href:    '/graph',
+    icon:    Layers,
+    label:   'DATA MODEL GRAPH',
+    sub:     'STIX 2.1 SCHEMA EXPLORER',
+    desc:    'Visualización 3D interactiva del esquema STIX 2.1 — nodos, relaciones, propiedades y origen de cada tipo de entidad en el grafo.',
+    tags:    ['STIX 2.1', 'SCHEMA', '3D GRAPH', 'NEO4J TYPES'],
+    color:   '#BB55FF',
+    pulse:   'card-purple',
+    metric:  '22 TIPOS',
   },
 ]
 
-export default function EnterPage() {
-  const { C, isDark } = useTheme()
-  const MONO = C.mono
-
-  const cardRefs = [
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-    useRef<HTMLDivElement>(null),
-  ]
+export default function ExploreHubPage() {
+  const card0   = useRef<HTMLDivElement>(null)
+  const card1   = useRef<HTMLDivElement>(null)
+  const card2   = useRef<HTMLDivElement>(null)
+  const card3   = useRef<HTMLDivElement>(null)
   const headerR = useRef<HTMLDivElement>(null)
   const [hovered, setHovered] = useState<number | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const calc = () => setIsMobile(window.innerWidth <= 420)
-    calc()
-    window.addEventListener('resize', calc)
-    return () => window.removeEventListener('resize', calc)
-  }, [])
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-    tl.from(headerR.current, { opacity: 0, y: -18, duration: 0.5, delay: 0.1 })
-      .from(cardRefs.map(r => r.current), { opacity: 0, y: 44, duration: 0.65, stagger: 0.18 }, '-=0.15')
+    tl.from(headerR.current,                          { opacity: 0, y: -18, duration: 0.5, delay: 0.1 })
+      .from([card0.current, card1.current, card2.current, card3.current], { opacity: 0, y: 44, duration: 0.65, stagger: 0.18 }, '-=0.15')
     return () => { tl.kill() }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const txtPrimary   = isDark ? '#E2E2E2' : '#1A1A1A'
-  const txtMuted     = isDark ? 'rgba(212,212,212,0.35)' : 'rgba(26,26,26,0.40)'
-  const txtBody      = isDark ? 'rgba(226,226,226,0.38)' : 'rgba(30,30,30,0.55)'
-  const txtBodyHov   = isDark ? 'rgba(226,226,226,0.68)' : 'rgba(30,30,30,0.85)'
-  const cardBg       = isDark ? 'rgba(10,10,10,0.88)'    : 'rgba(245,245,240,0.94)'
-  const cardBgHov    = (color: string) => isDark ? `${color}12` : `${color}0e`
-  const dimStats     = isDark ? 'rgba(212,212,212,0.2)'  : 'rgba(30,30,30,0.25)'
-  const titleHov     = isDark ? '#fff' : '#0A0A0A'
-
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: MONO, position: 'relative', overflow: 'hidden', transition: 'background 300ms' }}>
+    <div style={{ minHeight: '100vh', background: '#000', fontFamily: MONO, position: 'relative', overflow: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
 
       {/* Blurred bg */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 0,
-        filter: `blur(7px) brightness(${isDark ? 0.28 : 0.65}) saturate(1.6)`,
+        filter: 'blur(7px) brightness(0.28) saturate(1.6)',
         transform: 'scale(1.06)',
-        transition: 'filter 500ms',
       }}>
         <ParticleCanvas />
       </div>
 
-      {isDark && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none',
-          background: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.09) 3px,rgba(0,0,0,0.09) 4px)',
-        }} />
-      )}
-
+      {/* Scanlines */}
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none',
-        background: isDark
-          ? 'radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.82) 100%)'
-          : 'radial-gradient(ellipse at 50% 40%, rgba(240,239,232,0.3) 0%, rgba(240,239,232,0.75) 100%)',
-        transition: 'background 500ms',
+        position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none',
+        background: 'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.09) 3px,rgba(0,0,0,0.09) 4px)',
       }} />
 
+      {/* Vignette */}
       <div style={{
-        position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', opacity: isDark ? 0.035 : 0.025,
-        backgroundImage: `linear-gradient(${C.red} 1px,transparent 1px),linear-gradient(90deg,${C.red} 1px,transparent 1px)`,
+        position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.82) 100%)',
+      }} />
+
+      {/* Dot grid */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 2, pointerEvents: 'none', opacity: 0.035,
+        backgroundImage: 'linear-gradient(#E85419 1px,transparent 1px),linear-gradient(90deg,#E85419 1px,transparent 1px)',
         backgroundSize: '48px 48px',
       }} />
 
@@ -177,52 +152,53 @@ export default function EnterPage() {
         position: 'relative', zIndex: 10,
         minHeight: '100vh',
         display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: isMobile ? 'flex-start' : 'center',
-        padding: isMobile ? '28px 12px 36px' : '48px 24px',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '48px 24px',
       }}>
 
         {/* Header */}
-        <div ref={headerR} style={{ textAlign: 'center', marginBottom: isMobile ? 26 : 44 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
-            <a href="/" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              fontSize: 9, letterSpacing: '0.22em', color: txtMuted,
-              textDecoration: 'none', transition: 'color 150ms',
-            }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = C.red }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = txtMuted }}
-            >
-              <ChevronLeft size={10} /> BACK TO LANDING
-            </a>
-          </div>
+        <div ref={headerR} style={{ textAlign: 'center', marginBottom: 44 }}>
+          <a href="/dashboard" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            fontSize: 9, letterSpacing: '0.22em', color: 'rgba(212,212,212,0.35)',
+            textDecoration: 'none', marginBottom: 24, transition: 'color 150ms',
+          }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = R }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(212,212,212,0.35)' }}
+          >
+            <ChevronLeft size={10} /> BACK TO COMMAND CENTER
+          </a>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 22, marginTop: 8 }}>
-            <div style={{ width: 2, height: 24, background: C.red, boxShadow: `0 0 10px ${C.red}` }} />
-            <Shield size={16} color={C.red} />
-            <span style={{ fontSize: 13, letterSpacing: '0.3em', color: txtPrimary }}>
-              SKYFALL<span style={{ color: C.red }}>_</span>CTI
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 22 }}>
+            <div style={{ width: 2, height: 24, background: R, boxShadow: `0 0 10px ${R}` }} />
+            <Shield size={16} color={R} />
+            <span style={{ fontSize: 13, letterSpacing: '0.3em', color: '#E2E2E2' }}>
+              SKYFALL<span style={{ color: R }}>_</span>CTI
             </span>
           </div>
 
-          <p className="lp-neon" style={{ fontSize: 10, letterSpacing: '0.3em', color: C.red, marginBottom: 10 }}>
-            EXPLORE THE PLATFORM
+          <p className="lp-neon" style={{ fontSize: 10, letterSpacing: '0.3em', color: R, marginBottom: 10 }}>
+            EXPLORE DATABASE
           </p>
           <h1 style={{
             fontSize: 'clamp(1.6rem, 4.5vw, 3rem)', fontWeight: 900,
-            letterSpacing: '0.04em', color: txtPrimary, lineHeight: 1.1,
+            letterSpacing: '0.04em', color: '#fff', lineHeight: 1.1,
             margin: '0 0 10px',
           }}>
-            CHOOSE YOUR<br />
-            <span style={{ color: C.red }}>ENTRY POINT</span>
+            SELECT YOUR<br />
+            <span style={{ color: R }}>ACCESS MODE</span>
           </h1>
+          <p className="lp-flicker" style={{ fontSize: 10, color: 'rgba(212,212,212,0.3)', letterSpacing: '0.16em' }}>
+            KNOWLEDGE GRAPH — DEMO
+          </p>
         </div>
 
         {/* Cards */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(280px, 420px))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 380px))',
           justifyContent: 'center',
-          gap: 16, width: '100%', maxWidth: isMobile ? 430 : 900,
+          gap: 20, width: '100%', maxWidth: 1240,
         }}>
           {OPTIONS.map((opt, i) => {
             const Icon = opt.icon
@@ -230,13 +206,13 @@ export default function EnterPage() {
             return (
               <div
                 key={opt.href}
-                ref={cardRefs[i]}
+                ref={i === 0 ? card0 : i === 1 ? card1 : i === 2 ? card2 : card3}
                 onMouseEnter={() => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
                 className={opt.pulse}
                 style={{
                   position: 'relative',
-                  background: isHov ? cardBgHov(opt.color) : cardBg,
+                  background: isHov ? `${opt.color}12` : 'rgba(10,10,10,0.88)',
                   border: `1px solid ${opt.color}${isHov ? 'cc' : '55'}`,
                   transition: 'background 220ms, border-color 220ms',
                   cursor: 'pointer',
@@ -250,7 +226,7 @@ export default function EnterPage() {
 
                 <Brackets color={opt.color} size={10} />
 
-                <Link href={opt.href} style={{ display: 'block', padding: isMobile ? '22px 16px' : '28px 26px', textDecoration: 'none' }}>
+                <Link href={opt.href} style={{ display: 'block', padding: '28px 26px', textDecoration: 'none' }}>
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
                     <div style={{
@@ -277,7 +253,7 @@ export default function EnterPage() {
                   <h2 style={{
                     fontSize: 'clamp(1.15rem, 2.8vw, 1.55rem)',
                     fontWeight: 900, letterSpacing: '0.07em',
-                    color: isHov ? titleHov : txtPrimary,
+                    color: isHov ? '#fff' : '#D4D4D4',
                     marginBottom: 12, lineHeight: 1.15,
                     transition: 'color 220ms',
                   }}>
@@ -286,7 +262,7 @@ export default function EnterPage() {
 
                   <p style={{
                     fontSize: 12, lineHeight: 1.8,
-                    color: isHov ? txtBodyHov : txtBody,
+                    color: isHov ? 'rgba(226,226,226,0.68)' : 'rgba(226,226,226,0.38)',
                     marginBottom: 18, transition: 'color 220ms',
                   }}>
                     {opt.desc}
@@ -331,10 +307,10 @@ export default function EnterPage() {
             { v: '326,511', l: 'IOC INDICATORS' },
             { v: '570',     l: 'CVEs TRACKED'   },
             { v: '191',     l: 'THREAT ACTORS'  },
-            { v: '5M+',     l: 'GRAPH NODES'    },
+            { v: '22',      l: 'STIX TYPES'     },
           ].map(({ v, l }) => (
-            <span key={l} style={{ color: dimStats }}>
-              <span style={{ color: `${C.red}80` }}>{v}</span>{'  '}{l}
+            <span key={l} style={{ color: 'rgba(212,212,212,0.2)' }}>
+              <span style={{ color: 'rgba(232,84,25,0.55)' }}>{v}</span>{'  '}{l}
             </span>
           ))}
         </div>

@@ -27,6 +27,7 @@
     "react-leaflet": "^4.2.1",
     "react-use-measure": "^2.1.7",
     "three": "^0.176.0",
+    "three-spritetext": "^1.10.0",
     "world-countries": "^5.1.0"
   },
   "devDependencies": {
